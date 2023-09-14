@@ -19,61 +19,27 @@ public class TimesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> Get([FromQuery(Name = "name")]string name = null,[FromQuery(Name = "id")]int? id = null, [FromQuery(Name = "Cep")]string cep = null)
     {
-        using (var sqlConnection = new SqlConnection(_connectionString))
+        string filtro = "";
+        if (!String.IsNullOrEmpty(name))
         {
-            const string sql = "SELECT * FROM Jogadores";
-            var jogadores = await sqlConnection.QueryAsync<Jogador>(sql);
-            return Ok(jogadores);
+            filtro = "WHERE Nome = @name";
         }
-    }
-    
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
-    {
-        using (var sqlConnection = new SqlConnection(_connectionString))
+        else if (id != null && id > 0)
         {
-            const string sql = "SELECT * FROM Jogadores WHERE Id = @id";
-            var jogador = await sqlConnection.QuerySingleOrDefaultAsync<Jogador>(sql, new { id });
-            if (jogador is null)
-            {
-                return NotFound();
-            }
-            return Ok(jogador);
+            filtro = "WHERE Id = @id";
         }
-    }
-    
-    [HttpGet("cep/{cep}")]
-    public async Task<IActionResult> GetByCEP(string cep)
-    {
+        else if (!String.IsNullOrEmpty(cep))
+        {
+            filtro = "WHERE Cep = @cep";
+        }
+
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            const string sql = "SELECT * FROM Jogadores WHERE Cep = @cep";
-            var jogadores = await sqlConnection.QueryAsync<Jogador>(sql, new { cep });
-            if (jogadores is null || !jogadores.Any())
-            {
-                return NotFound();
-            }
-    
-            foreach (var jogador in jogadores)
-            {
-                var endereco = await ConsultarCEP(cep);
-    
-                if (endereco is not null)
-                {
-                    jogador.Logradouro = endereco.Logradouro;
-                    jogador.Complemento = endereco.Complemento;
-                    jogador.Bairro = endereco.Bairro;
-                    jogador.Localidade = endereco.Localidade;
-                    jogador.Uf = endereco.Uf;
-                    jogador.Ibge = endereco.Ibge;
-                    jogador.Gia = endereco.Gia;
-                    jogador.Ddd = endereco.Ddd;
-                    jogador.Siafi = endereco.Siafi;
-                }
-            }
-    
+            var sql = $"SELECT * FROM Jogadores {filtro}";
+            
+            var jogadores = await sqlConnection.QueryAsync<Jogador>(sql, new { name, id, cep });
             return Ok(jogadores);
         }
     }
@@ -105,6 +71,7 @@ public class TimesController : ControllerBase
             return BadRequest($"CEP inválido: {jogador.Cep}");
         }
     }
+    
     private static async Task<Endereco?> ConsultarCEP(string cep)
     {
         var client = new HttpClient();
