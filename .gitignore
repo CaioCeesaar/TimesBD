@@ -71,3 +71,4 @@ TimesBD/obj/Debug/net7.0/TimesBD.GlobalUsings.g.cs
 *.BuildWithSkipAnalyzers
 *.exe
 TimesBD/obj/Debug/net7.0/TimesBD.MvcApplicationPartsAssemblyInfo.cs
+*.v2
