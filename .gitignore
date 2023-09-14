@@ -60,3 +60,14 @@ TimesBD/bin/Debug/net7.0/TimesBD.dll
 TimesBD/obj/Debug/net7.0/TimesBD.assets.cache
 TimesBD/obj/Debug/net7.0/TimesBD.GeneratedMSBuildEditorConfig.editorconfig
 .vs/TimesBD/v17/.suo
+.vs/TimesBD/FileContentIndex/read.lock
+TimesBD/obj/Debug/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.cs
+TimesBD/obj/Debug/net7.0/TimesBD.AssemblyInfo.cs
+TimesBD/obj/Debug/net7.0/TimesBD.GlobalUsings.g.cs
+*.info
+*.user
+*.targets
+*.CopyComplete
+*.BuildWithSkipAnalyzers
+*.exe
+TimesBD/obj/Debug/net7.0/TimesBD.MvcApplicationPartsAssemblyInfo.cs

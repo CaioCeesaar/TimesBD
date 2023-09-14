@@ -71,6 +71,7 @@ public class TimesController : ControllerBase
             return BadRequest($"CEP inválido: {jogador.Cep}");
         }
     }
+    
     private static async Task<Endereco?> ConsultarCEP(string cep)
     {
         var client = new HttpClient();
