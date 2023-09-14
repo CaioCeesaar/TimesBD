@@ -53,3 +53,7 @@ TimesBD/bin/Debug/net7.0/TimesBD.dll
 *.pdb
 *.editorconfig
 *.json
+*.editorconfig
+*.cache
+TimesBD/obj/Debug/net7.0/TimesBD.assets.cache
+TimesBD/obj/Debug/net7.0/TimesBD.GeneratedMSBuildEditorConfig.editorconfig
