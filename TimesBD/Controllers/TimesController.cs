@@ -1,8 +1,12 @@
-﻿using System.Data.SqlClient;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Data.SqlClient;
 using Dapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using TimesBD.Entities;
+using TimesBD.Models;
 
 namespace TimesBD.Controllers;
 
@@ -40,8 +44,27 @@ public class TimesController : ControllerBase
             var sql = $"SELECT * FROM Jogadores {filtro}";
             
             var jogadores = await sqlConnection.QueryAsync<Jogador>(sql, new { name, id, cep });
-            return Ok(jogadores);
+            return Ok(jogadores); 
         }
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> Patch(int id, JogadorModel atualizaJogador)
+    {
+        var query = "UPDATE Jogadores SET Nome = @Nome, DataNascimento = @DataNascimento, Time_id = @Time_id WHERE Id = @Id";
+        
+        var parametros = new DynamicParameters();
+        parametros.Add("Id", id, DbType.Int32);
+        parametros.Add("Nome", atualizaJogador.Nome, DbType.String);
+        parametros.Add("DataNascimento", atualizaJogador.DataNascimento, DbType.DateTime);
+        parametros.Add("Time_id", atualizaJogador.Time_id, DbType.Int32);
+        
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.ExecuteAsync(query, parametros);
+            return Ok();
+        }
+        
     }
     
     [HttpPost]
@@ -63,12 +86,28 @@ public class TimesController : ControllerBase
                 jogador.Ddd = endereco.Ddd;
                 jogador.Siafi = endereco.Siafi;
                 
-                await sqlConnection.ExecuteAsync("INSERT INTO Jogadores (Nome, Idade, Time_id, Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) VALUES (@Nome, @Idade, @Time_id, @Cep, @Logradouro, @Complemento, @Bairro, @Localidade, @Uf, @Ibge, @Gia, @Ddd, @Siafi)", jogador);
+                await sqlConnection.ExecuteAsync("INSERT INTO Jogadores (Nome, DataNascimento, Time_id, Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) VALUES (@Nome, @DataNascimento , @Time_id, @Cep, @Logradouro, @Complemento, @Bairro, @Localidade, @Uf, @Ibge, @Gia, @Ddd, @Siafi)", jogador);
                 
                 return Ok(jogador);
             }
 
             return BadRequest($"CEP inválido: {jogador.Cep}");
+        }
+    }
+    
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        using (var sqlConnection = new SqlConnection(_connectionString))
+        {
+            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Jogadores WHERE Id = @id", new { id });
+
+            if (linhaAfetada == 0)
+            {
+                return NotFound();
+            }
+            
+            return Ok();
         }
     }
     
