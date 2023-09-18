@@ -4,11 +4,11 @@ public class Jogador
 {
     protected Jogador() { }
 
-    public Jogador(string nome, DateTime dataNascimento, int time_id, string cep, string logradouro, string complemento, string bairro, string localidade, string uf, string ibge, string gia, string ddd, string siafi)
+    public Jogador(string nome, DateTime dataNascimento, int timeId, string cep, string logradouro, string complemento, string bairro, string localidade, string uf, string ibge, string gia, string ddd, string siafi)
     {
         Nome = nome;
         DataNascimento = dataNascimento;
-        Time_id = time_id;
+        TimeId = timeId;
         Cep = cep;
         Logradouro = logradouro;
         Complemento = complemento;
@@ -24,7 +24,7 @@ public class Jogador
     public int Id { get; private set; }
     public string Nome { get; private set; }
     public DateTime DataNascimento { get; private set; }
-    public int Time_id { get; private set; }
+    public int TimeId { get; private set; }
     public string Cep { get; private set; }
     public string Logradouro { get; set; }
     public string Complemento { get; set; }
