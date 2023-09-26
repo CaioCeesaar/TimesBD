@@ -63,16 +63,24 @@ public class TimesController : ControllerBase
             return BadRequest("TimeId não pode ser menor que zero");
         }
 
-        var query = "UPDATE Jogadores SET Nome = @Nome, DataNascimento = @DataNascimento, TimeId = @TimeId WHERE Id = @Id";
+        var query = "UPDATE Jogadores SET DataNascimento = @DataNascimento, TimeId = @TimeId";
         
         var parametros = new DynamicParameters();
-        parametros.Add("Id", id, DbType.Int32);
-        parametros.Add("Nome", atualizaJogador.Nome, DbType.String);
         parametros.Add("DataNascimento", atualizaJogador.DataNascimento, DbType.DateTime);
         parametros.Add("TimeId", atualizaJogador.TimeId, DbType.Int32);
         
+        if (!string.Equals(atualizaJogador.Nome, "string", StringComparison.OrdinalIgnoreCase))
+        {
+            query += ", Nome = @Nome";
+            parametros.Add("Nome", atualizaJogador.Nome, DbType.String);
+        }
+
+        query += " WHERE Id = @Id";
+        parametros.Add("Id", id, DbType.Int32);
+        
         using (var connection = new SqlConnection(_connectionString))
         {
+
             await connection.ExecuteAsync(query, parametros);
             return Ok();
         }
@@ -101,7 +109,7 @@ public class TimesController : ControllerBase
                 {
                     return BadRequest("Nome não pode ser nulo ou vazio");
                 }
-                
+
                 if(jogador.DataNascimento > DateTime.Now || jogador.DataNascimento < DateTime.Now.AddYears(-100))
                 {
                     return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
