@@ -1,8 +1,10 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data;
+using System.Data.SqlClient;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using TimesBD.Entities;
+using TimesBD.Models;
 
 namespace TimesBD.Controllers;
 
@@ -38,9 +40,49 @@ public class TimesController : ControllerBase
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
             var sql = $"SELECT * FROM Jogadores {filtro}";
-            
             var jogadores = await sqlConnection.QueryAsync<Jogador>(sql, new { name, id, cep });
-            return Ok(jogadores);
+            return Ok(jogadores); 
+        }
+    }
+
+    [HttpPatch]
+    public async Task<IActionResult> Patch([FromQuery]int id, JogadorModel atualizaJogador)
+    {
+        if(string.IsNullOrEmpty(atualizaJogador.Nome))
+        {
+            return BadRequest("Nome não pode ser nulo ou vazio");
+        }
+
+        if(atualizaJogador.DataNascimento > DateTime.Now || atualizaJogador.DataNascimento < DateTime.Now.AddYears(-100))
+        {
+            return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
+        } 
+        
+        if(atualizaJogador.TimeId < 0)
+        {
+            return BadRequest("TimeId não pode ser menor que zero");
+        }
+
+        var query = "UPDATE Jogadores SET DataNascimento = @DataNascimento, TimeId = @TimeId";
+        
+        var parametros = new DynamicParameters();
+        parametros.Add("DataNascimento", atualizaJogador.DataNascimento, DbType.DateTime);
+        parametros.Add("TimeId", atualizaJogador.TimeId, DbType.Int32);
+        
+        if (!string.Equals(atualizaJogador.Nome, "string", StringComparison.OrdinalIgnoreCase))
+        {
+            query += ", Nome = @Nome";
+            parametros.Add("Nome", atualizaJogador.Nome, DbType.String);
+        }
+
+        query += " WHERE Id = @Id";
+        parametros.Add("Id", id, DbType.Int32);
+        
+        using (var connection = new SqlConnection(_connectionString))
+        {
+
+            await connection.ExecuteAsync(query, parametros);
+            return Ok();
         }
     }
     
@@ -63,12 +105,35 @@ public class TimesController : ControllerBase
                 jogador.Ddd = endereco.Ddd;
                 jogador.Siafi = endereco.Siafi;
                 
-                await sqlConnection.ExecuteAsync("INSERT INTO Jogadores (Nome, Idade, Time_id, Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) VALUES (@Nome, @Idade, @Time_id, @Cep, @Logradouro, @Complemento, @Bairro, @Localidade, @Uf, @Ibge, @Gia, @Ddd, @Siafi)", jogador);
+                if (string.IsNullOrEmpty(jogador.Nome))
+                {
+                    return BadRequest("Nome não pode ser nulo ou vazio");
+                }
+
+                if(jogador.DataNascimento > DateTime.Now || jogador.DataNascimento < DateTime.Now.AddYears(-100))
+                {
+                    return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
+                } 
                 
+                if(jogador.TimeId < 0)
+                {
+                    return BadRequest("TimeId não pode ser menor que zero");
+                }
+                
+                await sqlConnection.ExecuteAsync("INSERT INTO Jogadores (Nome, DataNascimento, TimeId, Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) VALUES (@Nome, @DataNascimento , @TimeId, @Cep, @Logradouro, @Complemento, @Bairro, @Localidade, @Uf, @Ibge, @Gia, @Ddd, @Siafi)", jogador);
                 return Ok(jogador);
             }
-
             return BadRequest($"CEP inválido: {jogador.Cep}");
+        }
+    }
+    
+    [HttpDelete]
+    public async Task<IActionResult> Delete([FromQuery]int id)
+    {
+        using (var sqlConnection = new SqlConnection(_connectionString))
+        {
+            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Jogadores WHERE Id = @id", new { id });
+            return linhaAfetada == 0 ? NotFound("O id informado não foi encontrado") : Ok("Jogador deletado com sucesso");
         }
     }
     

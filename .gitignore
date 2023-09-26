@@ -72,3 +72,6 @@ TimesBD/obj/Debug/net7.0/TimesBD.GlobalUsings.g.cs
 *.exe
 TimesBD/obj/Debug/net7.0/TimesBD.MvcApplicationPartsAssemblyInfo.cs
 *.v2
+.vs/ProjectEvaluation/timesbd.metadata.v6.1
+.vs/ProjectEvaluation/timesbd.projects.v6.1
+.idea\.idea.TimesBD\.idea\.gitignore
