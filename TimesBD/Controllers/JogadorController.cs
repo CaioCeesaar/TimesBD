@@ -10,13 +10,13 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TimesController : ControllerBase
+public class JogadorController : ControllerBase
 {
     
     private readonly string _connectionString;
 
     private const string AUTENTICA = "d41d8cd98f00b204e9800998ecf8427e";
-    public TimesController(IConfiguration configuration)
+    public JogadorController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
     }
