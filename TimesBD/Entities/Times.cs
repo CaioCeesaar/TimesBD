@@ -4,13 +4,13 @@ public class Times
 {
     protected Times(){}
     
-    public Times(string nome, int jogadorId)
+    public Times(string nome, int EnderecoId)
     {
         Nome = nome;
-        JogadorId = jogadorId;
+        EnderecoId = EnderecoId;
     }
     
     public int Id { get; private set; }
     public string Nome { get; private set; }
-    public int JogadorId { get; private set; }
+    public int EnderecoId { get; private set; }
 }

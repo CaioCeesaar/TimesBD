@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -12,22 +11,25 @@ namespace TimesBD.Controllers;
 [ApiController]
 public class JogadorController : ControllerBase
 {
-    
     private readonly string _connectionString;
 
-    private const string AUTENTICA = "d41d8cd98f00b204e9800998ecf8427e";
+    private const string Autentica = "d41d8cd98f00b204e9800998ecf8427e";
+
     public JogadorController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery(Name = "name")]string name = null,[FromQuery(Name = "id")]int? id = null, [FromQuery(Name = "Cep")]string cep = null, [FromHeader(Name = "Autentica")]string autentica = null)
+    public async Task<IActionResult> Get([FromQuery(Name = "name")] string? name = null,
+        [FromQuery(Name = "id")] int? id = null, [FromQuery(Name = "Cep")] string? cep = null,
+        [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         if (!ValidarAutenticacao(Request))
         {
             return BadRequest("Autenticação inválida");
         }
+
         string filtro = "";
         if (!String.IsNullOrEmpty(name))
         {
@@ -42,119 +44,145 @@ public class JogadorController : ControllerBase
             filtro = "WHERE Cep = @cep";
         }
 
-        using (var sqlConnection = new SqlConnection(_connectionString))
+        using var sqlConnection = new SqlConnection(_connectionString);
+        var sql =
+            $"SELECT J.*, T.Nome AS NomeTime FROM Jogadores J INNER JOIN Endereco E ON (J.EnderecoId = E.Id) JOIN Times T ON (J.TimeId = T.Id) {filtro}";
+        var jogadores = await sqlConnection.QueryAsync<Jogador>(sql, new { name, id, cep });
+
+        foreach (var jogador in jogadores)
         {
-            var sql = $"SELECT * FROM Jogadores {filtro}";
-            var jogadores = await sqlConnection.QueryAsync<Jogador>(sql, new { name, id, cep });
-            return Ok(jogadores); 
+            var enderecoJogador = jogador.EnderecoId;
+            var sqlEndereco = $"SELECT * FROM Endereco WHERE Id = {enderecoJogador}";
+            var enderecoConsulta = await sqlConnection.QueryAsync<Endereco>(sqlEndereco);
+            jogador.EnderecoJogador = enderecoConsulta.ToList()[0];
         }
+
+        return Ok(jogadores);
     }
 
     [HttpPatch]
-    public async Task<IActionResult> Patch([FromQuery]int id, JogadorModel atualizaJogador, [FromHeader(Name = "Autentica")]string autentica = null)
+    // do the patch request here
+    public async Task<IActionResult> Patch([FromQuery] int id, JogadorModel atualizaJogador,
+        [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         if (!ValidarAutenticacao(Request))
         {
             return BadRequest("Autenticação inválida");
         }
-        if(string.IsNullOrEmpty(atualizaJogador.Nome))
+
+        using var sqlConnection = new SqlConnection(_connectionString);
+        var sql = $"SELECT * FROM Jogadores WHERE Id = @id";
+        var jogador = await sqlConnection.QueryAsync<Jogador>(sql, new { id });
+        if (jogador is null)
         {
-            return BadRequest("Nome não pode ser nulo ou vazio");
+            return BadRequest("Jogador não encontrado");
         }
 
-        if(atualizaJogador.DataNascimento > DateTime.Now || atualizaJogador.DataNascimento < DateTime.Now.AddYears(-100))
+        if (!String.IsNullOrEmpty(atualizaJogador.Nome))
         {
-            return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
-        } 
-        
-        if(atualizaJogador.TimeId < 0)
-        {
-            return BadRequest("TimeId não pode ser menor que zero");
+            sql = $"UPDATE Jogadores SET Nome = @Nome WHERE Id = @id";
+            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.Nome, id });
         }
 
-        var query = "UPDATE Jogadores SET DataNascimento = @DataNascimento, TimeId = @TimeId";
-        
-        var parametros = new DynamicParameters();
-        parametros.Add("DataNascimento", atualizaJogador.DataNascimento, DbType.DateTime);
-        parametros.Add("TimeId", atualizaJogador.TimeId, DbType.Int32);
-        
-        if (!string.Equals(atualizaJogador.Nome, "string", StringComparison.OrdinalIgnoreCase))
+        if (atualizaJogador.DataNascimento != null)
         {
-            query += ", Nome = @Nome";
-            parametros.Add("Nome", atualizaJogador.Nome, DbType.String);
+            sql = $"UPDATE Jogadores SET DataNascimento = @DataNascimento WHERE Id = @id";
+            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.DataNascimento, id });
         }
 
-        query += " WHERE Id = @Id";
-        parametros.Add("Id", id, DbType.Int32);
-        
-        using (var connection = new SqlConnection(_connectionString))
+        if (atualizaJogador.TimeId != null)
         {
-
-            await connection.ExecuteAsync(query, parametros);
-            return Ok();
+            sql = $"UPDATE Jogadores SET TimeId = @TimeId WHERE Id = @id";
+            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.TimeId, id });
         }
+
+        if (atualizaJogador.EnderecoId != null)
+        {
+            sql = $"UPDATE Jogadores SET EnderecoId = @EnderecoId WHERE Id = @id";
+            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.EnderecoId, id });
+        }
+
+        if (atualizaJogador.EnderecoModeloJogador.Cep != null)
+        {
+            var endereco = await ConsultarCep(atualizaJogador.EnderecoModeloJogador.Cep);
+            sql = $"UPDATE Endereco SET Cep = '{endereco.Cep}', Logradouro = '{endereco.Logradouro}', Complemento = '{endereco.Complemento}', Bairro = '{endereco.Bairro}', Localidade = '{endereco.Localidade}', Uf = '{endereco.Uf}', Ibge = '{endereco.Ibge}', Gia = '{endereco.Gia}', Ddd = '{endereco.Ddd}', Siafi = '{endereco.Siafi}' WHERE Id = {atualizaJogador.EnderecoId}";
+            await sqlConnection.ExecuteAsync(sql);
+        }
+
+        return Ok("Jogador atualizado com sucesso");
     }
-    
+
+
     [HttpPost]
-    public async Task<IActionResult> Post(Jogador jogador, [FromHeader(Name = "Autentica")]string autentica = null)
+    public async Task<IActionResult> Post(Jogador jogador, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         if (!ValidarAutenticacao(Request))
         {
             return BadRequest("Autenticação inválida");
         }
-        using (var sqlConnection = new SqlConnection(_connectionString))
-        {
-            var endereco = await ConsultarCEP(jogador.Cep);
 
-            if (endereco is not null)
+        using var sqlConnection = new SqlConnection(_connectionString);
+
+
+        //if (string.IsNullOrEmpty(jogador.Nome))
+        //{
+        //    return BadRequest("Nome não pode ser nulo ou vazio");
+        //}
+
+        //if (jogador.DataNascimento > DateTime.Now || jogador.DataNascimento < DateTime.Now.AddYears(-100))
+        //{
+        //    return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
+        //}
+
+        //if (jogador.TimeId < 0)
+        //{
+        //    return BadRequest("TimeId não pode ser menor que zero");
+        //}
+        var endereco = await ConsultarCep(jogador.EnderecoJogador.Cep);
+
+
+        if (endereco is not null)
+        {
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            string sql =
+                $"INSERT INTO Endereco (Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) OUTPUT INSERTED.Id VALUES ('{endereco.Cep}', '{endereco.Logradouro}', '{endereco.Complemento}','{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}')";
+            int linhaAfetada = await sqlConnection.ExecuteScalarAsync<int>(sql);
+
+            if (linhaAfetada != 0)
             {
-                jogador.Logradouro = endereco.Logradouro;
-                jogador.Complemento = endereco.Complemento;
-                jogador.Bairro = endereco.Bairro;
-                jogador.Localidade = endereco.Localidade;
-                jogador.Uf = endereco.Uf;
-                jogador.Ibge = endereco.Ibge;
-                jogador.Gia = endereco.Gia;
-                jogador.Ddd = endereco.Ddd;
-                jogador.Siafi = endereco.Siafi;
-                
-                if (string.IsNullOrEmpty(jogador.Nome))
-                {
-                    return BadRequest("Nome não pode ser nulo ou vazio");
-                }
-
-                if(jogador.DataNascimento > DateTime.Now || jogador.DataNascimento < DateTime.Now.AddYears(-100))
-                {
-                    return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
-                } 
-                
-                if(jogador.TimeId < 0)
-                {
-                    return BadRequest("TimeId não pode ser menor que zero");
-                }
-                
-                await sqlConnection.ExecuteAsync("INSERT INTO Jogadores (Nome, DataNascimento, TimeId, Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) VALUES (@Nome, @DataNascimento , @TimeId, @Cep, @Logradouro, @Complemento, @Bairro, @Localidade, @Uf, @Ibge, @Gia, @Ddd, @Siafi)", jogador);
-                return Ok(jogador);
+                jogador.EnderecoId = linhaAfetada;
+                await sqlConnection.ExecuteAsync(
+                    "INSERT INTO Jogadores (Nome, DataNascimento, TimeId, EnderecoId) VALUES (@Nome, @DataNascimento, @TimeId, @EnderecoId)",
+                    jogador);
             }
-            return BadRequest($"CEP inválido: {jogador.Cep}");
         }
+        else
+        {
+            return BadRequest($"CEP inválido: {jogador}");
+        }
+
+        return Ok(jogador);
     }
-    
+
     [HttpDelete]
-    public async Task<IActionResult> Delete([FromQuery]int id, [FromHeader(Name = "Autentica")]string autentica = null)
+    public async Task<IActionResult> Delete([FromQuery] int id,
+        [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         if (!ValidarAutenticacao(Request))
         {
             return BadRequest("Autenticação inválida");
         }
+
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
             var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Jogadores WHERE Id = @id", new { id });
-            return linhaAfetada == 0 ? NotFound("O id informado não foi encontrado") : Ok("Jogador deletado com sucesso");
+            return linhaAfetada == 0
+                ? NotFound("O id informado não foi encontrado")
+                : Ok("Jogador deletado com sucesso");
         }
     }
-    
-    private static async Task<Endereco?> ConsultarCEP(string cep)
+
+    private static async Task<Endereco?> ConsultarCep(string cep)
     {
         var client = new HttpClient();
         var url = $"https://viacep.com.br/ws/{cep}/json/";
@@ -165,9 +193,10 @@ public class JogadorController : ControllerBase
             var endereco = JsonConvert.DeserializeObject<Endereco>(content);
             return endereco;
         }
+
         return null;
     }
-    
+
     private static bool ValidarAutenticacao(HttpRequest request)
     {
         var autentica = request.Headers["autentica"];
@@ -175,11 +204,12 @@ public class JogadorController : ControllerBase
         {
             return false;
         }
-        if(request.Headers["autentica"] == AUTENTICA)
+
+        if (autentica == Autentica)
         {
             return true;
         }
+
         return false;
     }
 }
-

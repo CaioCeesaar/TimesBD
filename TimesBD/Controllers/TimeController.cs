@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using TimesBD.Entities;
 using TimesBD.Models;
 
@@ -19,7 +20,7 @@ public class TimeController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery(Name = "name")] string name = null)
+    public async Task<IActionResult> Get([FromQuery(Name = "name")] string? name = null)
     {
         string filtro = "";
         if (!String.IsNullOrEmpty(name))
@@ -44,7 +45,21 @@ public class TimeController : Controller
             {
                 return BadRequest("Nome não pode ser nulo ou vazio");
             }
-            var sql = $"INSERT INTO Times (Nome, JogadorId) VALUES (@Nome, @JogadorId)";
+            
+            // var endereco = await ConsultarCep(time.Cep);
+            // if (endereco is not null)
+            // {
+            //     time.Logradouro = endereco.Logradouro;
+            //     time.Complemento = endereco.Complemento;
+            //     time.Bairro = endereco.Bairro;
+            //     time.Localidade = endereco.Localidade;
+            //     time.Uf = endereco.Uf;
+            //     time.Ibge = endereco.Ibge;
+            //     time.Gia = endereco.Gia;
+            //     time.Ddd = endereco.Ddd;
+            // }
+            
+            var sql = $"INSERT INTO Times (Nome) VALUES (@Nome)";
             await sqlConnection.ExecuteAsync(sql, time);
             return Ok(time);
         }
@@ -58,12 +73,11 @@ public class TimeController : Controller
             return BadRequest("Nome não pode ser nulo ou vazio");
         }
         
-        var query = "UPDATE Times SET JogadorId = @JogadorId";
+        var query = "UPDATE Times SET";
         var parametros = new DynamicParameters();
-        parametros.Add("JogadorId", atualizaTime.JogadorId, DbType.Int32);
         if(!string.Equals(atualizaTime.Nome, "string", StringComparison.OrdinalIgnoreCase))
         {
-            query += ", Nome = @Nome";
+            query += " Nome = @Nome";
             parametros.Add("Nome", atualizaTime.Nome, DbType.String);
         }
         query += " WHERE Id = @Id";
@@ -84,6 +98,20 @@ public class TimeController : Controller
             var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Times WHERE Id = @Id", new { id });
             return linhaAfetada == 0 ? NotFound("O time não foi encontrado") : Ok("Time deletado com sucesso");
         }
+    }
+    
+    private static async Task<Endereco?> ConsultarCep(string cep)
+    {
+        var client = new HttpClient();
+        var url = $"https://viacep.com.br/ws/{cep}/json/";
+        var response = await client.GetAsync(url);
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            var endereco = JsonConvert.DeserializeObject<Endereco>(content);
+            return endereco;
+        }
+        return null;
     }
     
 }
