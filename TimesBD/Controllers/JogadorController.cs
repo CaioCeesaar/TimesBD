@@ -10,19 +10,24 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TimesController : ControllerBase
+public class JogadorController : ControllerBase
 {
     
     private readonly string _connectionString;
-    
-    public TimesController(IConfiguration configuration)
+
+    private const string AUTENTICA = "d41d8cd98f00b204e9800998ecf8427e";
+    public JogadorController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery(Name = "name")]string name = null,[FromQuery(Name = "id")]int? id = null, [FromQuery(Name = "Cep")]string cep = null)
+    public async Task<IActionResult> Get([FromQuery(Name = "name")]string name = null,[FromQuery(Name = "id")]int? id = null, [FromQuery(Name = "Cep")]string cep = null, [FromHeader(Name = "Autentica")]string autentica = null)
     {
+        if (!ValidarAutenticacao(Request))
+        {
+            return BadRequest("Autenticação inválida");
+        }
         string filtro = "";
         if (!String.IsNullOrEmpty(name))
         {
@@ -46,8 +51,12 @@ public class TimesController : ControllerBase
     }
 
     [HttpPatch]
-    public async Task<IActionResult> Patch([FromQuery]int id, JogadorModel atualizaJogador)
+    public async Task<IActionResult> Patch([FromQuery]int id, JogadorModel atualizaJogador, [FromHeader(Name = "Autentica")]string autentica = null)
     {
+        if (!ValidarAutenticacao(Request))
+        {
+            return BadRequest("Autenticação inválida");
+        }
         if(string.IsNullOrEmpty(atualizaJogador.Nome))
         {
             return BadRequest("Nome não pode ser nulo ou vazio");
@@ -87,8 +96,12 @@ public class TimesController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> Post(Jogador jogador)
+    public async Task<IActionResult> Post(Jogador jogador, [FromHeader(Name = "Autentica")]string autentica = null)
     {
+        if (!ValidarAutenticacao(Request))
+        {
+            return BadRequest("Autenticação inválida");
+        }
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
             var endereco = await ConsultarCEP(jogador.Cep);
@@ -128,8 +141,12 @@ public class TimesController : ControllerBase
     }
     
     [HttpDelete]
-    public async Task<IActionResult> Delete([FromQuery]int id)
+    public async Task<IActionResult> Delete([FromQuery]int id, [FromHeader(Name = "Autentica")]string autentica = null)
     {
+        if (!ValidarAutenticacao(Request))
+        {
+            return BadRequest("Autenticação inválida");
+        }
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
             var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Jogadores WHERE Id = @id", new { id });
@@ -151,5 +168,18 @@ public class TimesController : ControllerBase
         return null;
     }
     
+    private static bool ValidarAutenticacao(HttpRequest request)
+    {
+        var autentica = request.Headers["autentica"];
+        if (!request.Headers.ContainsKey("autentica"))
+        {
+            return false;
+        }
+        if(request.Headers["autentica"] == AUTENTICA)
+        {
+            return true;
+        }
+        return false;
+    }
 }
 
