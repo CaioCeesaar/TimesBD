@@ -61,7 +61,6 @@ public class JogadorController : ControllerBase
     }
 
     [HttpPatch]
-    // do the patch request here
     public async Task<IActionResult> Patch([FromQuery] int id, JogadorModel atualizaJogador,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
@@ -78,7 +77,12 @@ public class JogadorController : ControllerBase
             return BadRequest("Jogador não encontrado");
         }
 
-        if (!String.IsNullOrEmpty(atualizaJogador.Nome))
+        if (String.IsNullOrEmpty(atualizaJogador.Nome))
+        {
+            return BadRequest("Nome não pode ser nulo ou vazio");
+        }
+        
+        if (!string.Equals(atualizaJogador.Nome, "string", StringComparison.OrdinalIgnoreCase))
         {
             sql = $"UPDATE Jogadores SET Nome = @Nome WHERE Id = @id";
             await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.Nome, id });
@@ -86,14 +90,36 @@ public class JogadorController : ControllerBase
 
         if (atualizaJogador.DataNascimento != null)
         {
+            if (atualizaJogador.DataNascimento > DateTime.Now ||
+                atualizaJogador.DataNascimento < DateTime.Now.AddYears(-100))
+            {
+                return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
+            }
+            
             sql = $"UPDATE Jogadores SET DataNascimento = @DataNascimento WHERE Id = @id";
             await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.DataNascimento, id });
         }
-
+        
         if (atualizaJogador.TimeId != null)
         {
+            if (atualizaJogador.TimeId < 0)
+            {
+                return BadRequest("TimeId não pode ser menor que zero");
+            }
+
+            var sqlTime = $"SELECT * FROM Times WHERE Id = {atualizaJogador.TimeId}";
+            var time = await sqlConnection.QueryAsync<TimeModel>(sqlTime);
+            if (time == null || !time.Any())
+            {
+                return BadRequest($"Time não encontrado: {atualizaJogador.TimeId}.");
+            }
+            
             sql = $"UPDATE Jogadores SET TimeId = @TimeId WHERE Id = @id";
             await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.TimeId, id });
+        }
+        else
+        {
+            return BadRequest("TimeId não pode ser nulo");
         }
 
         if (atualizaJogador.EnderecoId != null)
@@ -105,6 +131,11 @@ public class JogadorController : ControllerBase
         if (atualizaJogador.EnderecoModeloJogador.Cep != null)
         {
             var endereco = await ConsultarCep(atualizaJogador.EnderecoModeloJogador.Cep);
+            if (endereco is null)
+            {
+                return BadRequest("Cep inválido");
+            }
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
             sql = $"UPDATE Endereco SET Cep = '{endereco.Cep}', Logradouro = '{endereco.Logradouro}', Complemento = '{endereco.Complemento}', Bairro = '{endereco.Bairro}', Localidade = '{endereco.Localidade}', Uf = '{endereco.Uf}', Ibge = '{endereco.Ibge}', Gia = '{endereco.Gia}', Ddd = '{endereco.Ddd}', Siafi = '{endereco.Siafi}' WHERE Id = {atualizaJogador.EnderecoId}";
             await sqlConnection.ExecuteAsync(sql);
         }
@@ -114,7 +145,7 @@ public class JogadorController : ControllerBase
 
 
     [HttpPost]
-    public async Task<IActionResult> Post(Jogador jogador, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> Post(JogadorPost jogador, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         if (!ValidarAutenticacao(Request))
         {
@@ -122,46 +153,56 @@ public class JogadorController : ControllerBase
         }
 
         using var sqlConnection = new SqlConnection(_connectionString);
-
-
-        //if (string.IsNullOrEmpty(jogador.Nome))
-        //{
-        //    return BadRequest("Nome não pode ser nulo ou vazio");
-        //}
-
-        //if (jogador.DataNascimento > DateTime.Now || jogador.DataNascimento < DateTime.Now.AddYears(-100))
-        //{
-        //    return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
-        //}
-
-        //if (jogador.TimeId < 0)
-        //{
-        //    return BadRequest("TimeId não pode ser menor que zero");
-        //}
-        var endereco = await ConsultarCep(jogador.EnderecoJogador.Cep);
-
-
-        if (endereco is not null)
+        // verificar se o time existe
+        
+        
+        if (string.IsNullOrEmpty(jogador.Nome))
         {
-            endereco.Localidade = endereco.Localidade.Replace("'", "''");
-            string sql =
-                $"INSERT INTO Endereco (Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) OUTPUT INSERTED.Id VALUES ('{endereco.Cep}', '{endereco.Logradouro}', '{endereco.Complemento}','{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}')";
-            int linhaAfetada = await sqlConnection.ExecuteScalarAsync<int>(sql);
+            return BadRequest("Nome não pode ser nulo ou vazio");
+        }
 
-            if (linhaAfetada != 0)
+        if (jogador.DataNascimento > DateTime.Now || jogador.DataNascimento < DateTime.Now.AddYears(-100))
+        {
+            return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
+        }
+        if (jogador.TimeId != null)
+        {
+            if (jogador.TimeId < 0)
             {
-                jogador.EnderecoId = linhaAfetada;
-                await sqlConnection.ExecuteAsync(
-                    "INSERT INTO Jogadores (Nome, DataNascimento, TimeId, EnderecoId) VALUES (@Nome, @DataNascimento, @TimeId, @EnderecoId)",
-                    jogador);
+                return BadRequest("TimeId não pode ser menor que zero");
+            }
+            
+            var sqlTime = $"SELECT * FROM Times WHERE Id = {jogador.TimeId}";
+            var time = await sqlConnection.QueryAsync<TimeModel>(sqlTime);
+            if (time == null || !time.Any())
+            {
+                return BadRequest($"Time não encontrado: {jogador.TimeId}.");
             }
         }
         else
         {
-            return BadRequest($"CEP inválido: {jogador}");
+            return BadRequest("TimeId não pode ser nulo");
         }
+        
+        // TODO: Comparar valores do endereço (se já existem endereços iguais)
+        var endereco = await ConsultarCep(jogador.Cep);
+        if (endereco.Cep is not null)
+        {
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            string sql =
+                $"INSERT INTO Endereco (Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) OUTPUT INSERTED.Id VALUES ('{endereco.Cep}', '{endereco.Logradouro}', '{endereco.Complemento}','{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}')";
+            int enderecoId = await sqlConnection.ExecuteScalarAsync<int>(sql);
 
-        return Ok(jogador);
+            if (enderecoId != 0)
+            {        
+                string sqlEndrecoId = $"INSERT INTO Jogadores (Nome, DataNascimento, TimeId, EnderecoId) VALUES ('{jogador.Nome}', '{jogador.DataNascimento}', '{jogador.TimeId}', '{enderecoId}')";
+
+                await sqlConnection.ExecuteAsync(sqlEndrecoId);
+            }
+            
+            return Ok();
+        }
+        return BadRequest("Cep inválido");
     }
 
     [HttpDelete]
@@ -193,23 +234,12 @@ public class JogadorController : ControllerBase
             var endereco = JsonConvert.DeserializeObject<Endereco>(content);
             return endereco;
         }
-
         return null;
     }
 
     private static bool ValidarAutenticacao(HttpRequest request)
     {
-        var autentica = request.Headers["autentica"];
-        if (!request.Headers.ContainsKey("autentica"))
-        {
-            return false;
-        }
-
-        if (autentica == Autentica)
-        {
-            return true;
-        }
-
-        return false;
+        return request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica;
     }
+
 }

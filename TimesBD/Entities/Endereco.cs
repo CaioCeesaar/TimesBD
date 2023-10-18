@@ -17,7 +17,6 @@ public class Endereco
         Ddd = ddd;
         Siafi = siafi;
     }
-
     public int Id { get;  set; }
     public string Cep { get;  set; }
     public string Logradouro { get;  set; }
@@ -29,4 +28,9 @@ public class Endereco
     public string Gia { get;  set; }
     public string Ddd { get;  set; }
     public string Siafi { get;  set; }
+}
+
+public class EnderecoPost
+{
+    public string Cep { get; set; }
 }

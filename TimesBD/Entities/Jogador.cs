@@ -22,3 +22,11 @@ public class Jogador
     public Endereco EnderecoJogador { get; set; }
     
 }
+
+public class JogadorPost
+{
+    public string Nome { get; set; }
+    public DateTime DataNascimento { get; set; }
+    public int TimeId { get; set; }
+    public string Cep { get; set; }
+}
