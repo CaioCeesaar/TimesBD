@@ -167,9 +167,9 @@ public class JogadorController : ControllerBase
         }
         if (jogador.TimeId != null)
         {
-            if (jogador.TimeId < 0)
+            if (jogador.TimeId <= 0)
             {
-                return BadRequest("TimeId não pode ser menor que zero");
+                return BadRequest("TimeId não pode ser menor ou igual a zero");
             }
             
             var sqlTime = $"SELECT * FROM Times WHERE Id = {jogador.TimeId}";
@@ -237,9 +237,7 @@ public class JogadorController : ControllerBase
         return null;
     }
 
-    private static bool ValidarAutenticacao(HttpRequest request)
-    {
-        return request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica;
-    }
+    private static bool ValidarAutenticacao(HttpRequest request) => request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica;
+    
 
 }
