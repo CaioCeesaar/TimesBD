@@ -1,20 +1,25 @@
-﻿namespace TimesBD.Entities
+﻿namespace TimesBD.Entities;
+
+public class Ingresso
 {
-    public class Ingresso
+    protected Ingresso() { }
+
+    public Ingresso(double valor, int partidaId)
     {
-        protected Ingresso() { }
-
-        public Ingresso(double valor, int partidaId)
-        {
-            Valor = valor;
-            PartidaId = partidaId;
-        }
-
-        public int Id { get; set; }
-       
-        public double Valor { get; set; }
-
-        public int PartidaId { get; set; }
-
+        Valor = valor;
+        PartidaId = partidaId;
     }
+
+    public int Id { get; set; }
+       
+    public double Valor { get; set; }
+
+    public int PartidaId { get; set; }
+
+}
+
+public class IngressoPost
+{
+    public double Valor { get; set; }
+    public int PartidaId { get; set; }
 }

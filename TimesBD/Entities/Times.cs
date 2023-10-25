@@ -4,13 +4,29 @@ public class Times
 {
     protected Times(){}
     
-    public Times(string nome, int EnderecoId)
+    public Times(string nome, int enderecoId)
     {
         Nome = nome;
-        EnderecoId = EnderecoId;
+        EnderecoId = enderecoId;
     }
     
-    public int Id { get; private set; }
-    public string Nome { get; private set; }
-    public int EnderecoId { get; private set; }
+    public int Id { get;  set; }
+    public string Nome { get; set; }
+    public int EnderecoId { get;  set; }
+    public Endereco EnderecoTime { get; set; }
+}
+
+public class TimesPost
+{
+    public string Nome { get; set; }
+    public string Cep { get; set; }
+}
+
+public class TimeModel
+{
+    public string Nome { get; set; }
+    
+    public int EnderecoId { get; set; }
+    
+    public Endereco EnderecoModeloTime { get; set; }
 }
