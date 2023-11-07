@@ -9,7 +9,7 @@ public class Times
         Nome = nome;
         EnderecoId = enderecoId;
     }
-    
+
     public int Id { get;  set; }
     public string Nome { get; set; }
     public int EnderecoId { get;  set; }

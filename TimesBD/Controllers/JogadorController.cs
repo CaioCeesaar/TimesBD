@@ -80,52 +80,6 @@ public class JogadorController : ControllerBase
         {
             return BadRequest("Nome não pode ser nulo ou vazio");
         }
-        
-        if (!string.Equals(atualizaJogador.Nome, "string", StringComparison.OrdinalIgnoreCase))
-        {
-            sql = $"UPDATE Jogadores SET Nome = @Nome WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.Nome, id });
-        }
-
-        if (atualizaJogador.DataNascimento != null)
-        {
-            if (atualizaJogador.DataNascimento > DateTime.Now ||
-                atualizaJogador.DataNascimento < DateTime.Now.AddYears(-100))
-            {
-                return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
-            }
-            
-            sql = $"UPDATE Jogadores SET DataNascimento = @DataNascimento WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.DataNascimento, id });
-        }
-        
-        if (atualizaJogador.TimeId != null)
-        {
-            if (atualizaJogador.TimeId < 0)
-            {
-                return BadRequest("TimeId não pode ser menor que zero");
-            }
-
-            var sqlTime = $"SELECT * FROM Times WHERE Id = {atualizaJogador.TimeId}";
-            var time = await sqlConnection.QueryAsync<TimeModel>(sqlTime);
-            if (time == null || !time.Any())
-            {
-                return BadRequest($"Time não encontrado: {atualizaJogador.TimeId}.");
-            }
-            
-            sql = $"UPDATE Jogadores SET TimeId = @TimeId WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.TimeId, id });
-        }
-        else
-        {
-            return BadRequest("TimeId não pode ser nulo");
-        }
-
-        if (atualizaJogador.EnderecoId != null)
-        {
-            sql = $"UPDATE Jogadores SET EnderecoId = @EnderecoId WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.EnderecoId, id });
-        }
 
         if (atualizaJogador.EnderecoModeloJogador.Cep != null)
         {
@@ -138,8 +92,60 @@ public class JogadorController : ControllerBase
             sql = $"UPDATE Endereco SET Cep = '{endereco.Cep}', Logradouro = '{endereco.Logradouro}', Complemento = '{endereco.Complemento}', Bairro = '{endereco.Bairro}', Localidade = '{endereco.Localidade}', Uf = '{endereco.Uf}', Ibge = '{endereco.Ibge}', Gia = '{endereco.Gia}', Ddd = '{endereco.Ddd}', Siafi = '{endereco.Siafi}' WHERE Id = {atualizaJogador.EnderecoId}";
             await sqlConnection.ExecuteAsync(sql);
         }
+        
+        var sql2 = $"EXEC sp_AtualizarJogador {id}, '{atualizaJogador.Nome}', '{atualizaJogador.DataNascimento}', {atualizaJogador.TimeId}, {atualizaJogador.EnderecoId}";
+        await sqlConnection.ExecuteAsync(sql2);
+        return Ok();
 
-        return Ok("Jogador atualizado com sucesso");
+        // if (!string.Equals(atualizaJogador.Nome, "string", StringComparison.OrdinalIgnoreCase))
+        // {
+        //     sql = $"UPDATE Jogadores SET Nome = @Nome WHERE Id = @id";
+        //     await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.Nome, id });
+        // }
+        //
+        // if (atualizaJogador.DataNascimento != null)
+        // {
+        //     if (atualizaJogador.DataNascimento > DateTime.Now ||
+        //         atualizaJogador.DataNascimento < DateTime.Now.AddYears(-100))
+        //     {
+        //         return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
+        //     }
+        //     
+        //     sql = $"UPDATE Jogadores SET DataNascimento = @DataNascimento WHERE Id = @id";
+        //     await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.DataNascimento, id });
+        // }
+        //
+        // if (atualizaJogador.TimeId != null)
+        // {
+        //     if (atualizaJogador.TimeId < 0)
+        //     {
+        //         return BadRequest("TimeId não pode ser menor que zero");
+        //     }
+        //
+        //     var sqlTime = $"SELECT * FROM Times WHERE Id = {atualizaJogador.TimeId}";
+        //     var time = await sqlConnection.QueryAsync<TimeModel>(sqlTime);
+        //     if (time == null || !time.Any())
+        //     {
+        //         return BadRequest($"Time não encontrado: {atualizaJogador.TimeId}.");
+        //     }
+        //     
+        //     sql = $"UPDATE Jogadores SET TimeId = @TimeId WHERE Id = @id";
+        //     await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.TimeId, id });
+        // }
+        // else
+        // {
+        //     return BadRequest("TimeId não pode ser nulo");
+        // }
+        //
+        // if (atualizaJogador.EnderecoId != null)
+        // {
+        //     sql = $"UPDATE Jogadores SET EnderecoId = @EnderecoId WHERE Id = @id";
+        //     await sqlConnection.ExecuteAsync(sql, new { atualizaJogador.EnderecoId, id });
+        // }
+        //
+         
+        //
+        // return Ok("Jogador atualizado com sucesso");
     }
 
 
@@ -195,7 +201,7 @@ public class JogadorController : ControllerBase
 
             if (enderecoId != 0)
             {        
-                string sqlEndrecoId = $"INSERT INTO Jogadores (Nome, DataNascimento, TimeId, EnderecoId) VALUES ('{jogador.Nome}', '{jogador.DataNascimento}', '{jogador.TimeId}', '{enderecoId}')";
+                string sqlEndrecoId = $"EXEC sp_InserirJogador '{jogador.Nome}', '{jogador.DataNascimento}', {jogador.TimeId}, {enderecoId}";
 
                 await sqlConnection.ExecuteAsync(sqlEndrecoId);
             }
@@ -216,7 +222,7 @@ public class JogadorController : ControllerBase
 
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Jogadores WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync("EXEC sp_DeletarJogador {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Jogador deletado com sucesso");
@@ -238,7 +244,7 @@ public class JogadorController : ControllerBase
         }
         
         using var sqlConnection = new SqlConnection(_connectionString);
-        var sql = $"SELECT T.*, E.* FROM Times T INNER JOIN Endereco E ON (T.EnderecoId = E.Id) {filtro}";
+        var sql = $"SELECT * FROM Times {filtro}";
         var times = await sqlConnection.QueryAsync<Times>(sql, new { name });
 
         foreach (var time in times)
@@ -273,11 +279,11 @@ public class JogadorController : ControllerBase
         {
             return BadRequest("Nome não pode ser nulo ou vazio");
         }
-        
+
+        var parameters = $"{id}";
         if (!string.Equals(atualizaTime.Nome, "string", StringComparison.OrdinalIgnoreCase))
         {
-            sql = $"UPDATE Times SET Nome = @Nome WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { atualizaTime.Nome, id });
+            parameters += $", '{atualizaTime.Nome}'";
         }
 
         if (atualizaTime.EnderecoModeloTime.Cep != null)
@@ -291,7 +297,8 @@ public class JogadorController : ControllerBase
             sql = $"UPDATE Endereco SET Cep = '{endereco.Cep}', Logradouro = '{endereco.Logradouro}', Complemento = '{endereco.Complemento}', Bairro = '{endereco.Bairro}', Localidade = '{endereco.Localidade}', Uf = '{endereco.Uf}', Ibge = '{endereco.Ibge}', Gia = '{endereco.Gia}', Ddd = '{endereco.Ddd}', Siafi = '{endereco.Siafi}' WHERE Id = {atualizaTime.EnderecoId}";
             await sqlConnection.ExecuteAsync(sql);
         }
-        
+        var sql2 = $"EXEC sp_AtualizarTime {parameters}, {atualizaTime.EnderecoId}";
+        await sqlConnection.ExecuteAsync(sql2);
         return Ok("Time atualizado com sucesso");
     }
 
@@ -320,7 +327,7 @@ public class JogadorController : ControllerBase
 
             if (enderecoId != 0)
             {
-                string sqlEndrecoId = $"INSERT INTO Times (Nome, EnderecoId) VALUES ('{time.Nome}', {enderecoId})";
+                string sqlEndrecoId = $"EXEC sp_InserirTime '{time.Nome}', {enderecoId}";
 
                 await sqlConnection.ExecuteAsync(sqlEndrecoId);
             }
@@ -336,12 +343,12 @@ public class JogadorController : ControllerBase
         {
             return BadRequest("Autenticação inválida");
         }
-        
+        CommandDefinition cDTeste = new CommandDefinition($"EXEC sp_DeletarTime {id}");
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Times WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync(cDTeste);
             return linhaAfetada == 0
-                ? NotFound("O id informado não foi encontrado")
+                ? BadRequest("O id informado não foi encontrado")
                 : Ok("Time deletado com sucesso");
         }
     }
@@ -413,7 +420,7 @@ public class JogadorController : ControllerBase
 
             if (enderecoId != 0)
             {
-                string sqlEndrecoId = $"INSERT INTO Estadios (Nome, EnderecoId, Limite) VALUES ('{estadio.Nome}', {enderecoId}, {estadio.Limite})";
+                string sqlEndrecoId = $"EXEC sp_InserirEstadio '{estadio.Nome}', {enderecoId}, {estadio.Limite}";
 
                 await sqlConnection.ExecuteAsync(sqlEndrecoId);
             }
@@ -446,10 +453,10 @@ public class JogadorController : ControllerBase
             return BadRequest("Nome não pode ser nulo ou vazio");
         }
         
+        var parameters = $"{id}";
         if (!string.Equals(estadio.Nome, "string", StringComparison.OrdinalIgnoreCase))
         {
-            sql = $"UPDATE Estadios SET Nome = @Nome WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { estadio.Nome, id });
+            parameters += $", '{estadio.Nome}'";
         }
 
         if (estadio.Limite <= 0)
@@ -470,6 +477,8 @@ public class JogadorController : ControllerBase
             await sqlConnection.ExecuteAsync(sql);
         }
 
+        var sql2 = $"EXEC sp_AtualiziarEstadio {parameters}, {estadio.EnderecoId}, {estadio.Limite}";
+        await sqlConnection.ExecuteAsync(sql2);
         return Ok("Estadio atualizado com sucesso");
     }
     
@@ -484,7 +493,7 @@ public class JogadorController : ControllerBase
         
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Estadios WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync($"EXEC sp_DeletarEstadio {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Estádio deletado com sucesso");
@@ -547,7 +556,7 @@ public class JogadorController : ControllerBase
             return BadRequest($"Partida não encontrada: {ingresso.PartidaId}.");
         }
         
-        string sql = $"INSERT INTO Ingresso (Valor, PartidaId) VALUES ({ingresso.Valor}, {ingresso.PartidaId})";
+        string sql = $"EXEC sp_InserirIngresso {ingresso.Valor}, {ingresso.PartidaId}";
         await sqlConnection.ExecuteAsync(sql);
         return Ok();
     }
@@ -562,7 +571,7 @@ public class JogadorController : ControllerBase
         
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Ingresso WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync($"EXEC sp_DeletarIngresso {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Time deletado com sucesso");
@@ -644,7 +653,7 @@ public class JogadorController : ControllerBase
             return BadRequest("EstadioId não pode ser nulo");
         }
         
-        string sql = $"INSERT INTO Partida (TimeID, JogoId, EstadioId) VALUES ({partida.TimeID}, {partida.JogoId}, {partida.EstadioId})";
+        string sql = $"EXEC sp_InserirPartida {partida.TimeID}, {partida.JogoId}, {partida.EstadioId}";
         await sqlConnection.ExecuteAsync(sql);
         return Ok();
     }
@@ -675,8 +684,6 @@ public class JogadorController : ControllerBase
             {
                 return BadRequest($"Time não encontrado: {partida.TimeID}.");
             }
-            sql = $"UPDATE Partida SET TimeID = @TimeID WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { partida.TimeID, id });
         }
 
         if (partida.JogoId > 0)
@@ -687,8 +694,6 @@ public class JogadorController : ControllerBase
             {
                 return BadRequest($"Jogo não encontrado: {partida.JogoId}.");
             }
-            sql = $"UPDATE Partida SET JogoId = @JogoId WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { partida.JogoId, id });
         }
 
         if (partida.EstadioId > 0)
@@ -699,9 +704,9 @@ public class JogadorController : ControllerBase
             {
                 return BadRequest($"Estádio não encontrado: {partida.EstadioId}.");
             }
-            sql = $"UPDATE Partida SET EstadioId = @EstadioId WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { partida.EstadioId, id });
         }
+        var sql2 = $"EXEC sp_AtualizarPartida {id}, {partida.TimeID}, {partida.JogoId}, {partida.EstadioId}";
+        await sqlConnection.ExecuteAsync(sql2);
         return Ok("Partida atualizada com sucesso");
     }
 
@@ -715,7 +720,7 @@ public class JogadorController : ControllerBase
         
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Partida WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync($"EXEC sp_DeletarPartida {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Time deletado com sucesso");
@@ -779,7 +784,7 @@ public class JogadorController : ControllerBase
             return BadRequest("CPF já cadastrado");
         }
         
-        string sql = $"INSERT INTO Comprador (Nome, CPF) VALUES ('{comprador.Nome}', '{comprador.CPF}')";
+        string sql = $"EXEC sp_InserirComprador '{comprador.Nome}', '{comprador.CPF}'";
         await sqlConnection.ExecuteAsync(sql);
         return Ok();
     }
@@ -803,11 +808,10 @@ public class JogadorController : ControllerBase
         {
             return BadRequest("Nome não pode ser nulo ou vazio");
         }
-        
+        var parameters = $"{id}";
         if (!string.Equals(comprador.Nome, "string", StringComparison.OrdinalIgnoreCase))
         {
-            sql = $"UPDATE Comprador SET Nome = @Nome WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { comprador.Nome, id });
+            parameters += $", '{comprador.Nome}'";
         }
 
         if (String.IsNullOrEmpty(comprador.CPF))
@@ -827,9 +831,8 @@ public class JogadorController : ControllerBase
             return BadRequest("CPF já cadastrado");
         }
         
-        sql = $"UPDATE Comprador SET CPF = @CPF WHERE Id = @id";
-        await sqlConnection.ExecuteAsync(sql, new { comprador.CPF, id });
-        
+        sql = $"EXEC sp_AtualizarComprador {parameters}, '{comprador.CPF}'";
+        await sqlConnection.ExecuteAsync(sql);
         return Ok("Comprador atualizado com sucesso");
     }
     
@@ -840,7 +843,7 @@ public class JogadorController : ControllerBase
         
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Comprador WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync($"EXEC sp_DeletarComprador {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Comprador deletado com sucesso");
@@ -911,8 +914,8 @@ public class JogadorController : ControllerBase
         {
             return BadRequest($"Ingresso não encontrado: {venda.IngressoID}.");
         }
-        
-        string sql = $"INSERT INTO Vendas (DataVenda, CompradorId, IngressoId) VALUES ('{venda.DataVenda}', {venda.CompradorId}, {venda.IngressoID})";
+
+        string sql = $"EXEC sp_InserirVenda {venda.DataVenda}', {venda.CompradorId}, {venda.IngressoID}";
         await sqlConnection.ExecuteAsync(sql);
         return Ok();
     }
@@ -924,7 +927,7 @@ public class JogadorController : ControllerBase
         
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Vendas WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync($"EXEC sp_DeletarVenda {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Venda deletada com sucesso");
@@ -987,8 +990,8 @@ public class JogadorController : ControllerBase
         {
             return BadRequest($"Estádio não encontrado: {jogo.EstadioId}.");
         }
-        
-        string sql = $"INSERT INTO Jogo (DataJogo, EstadioId) VALUES ('{jogo.Data}', {jogo.EstadioId})";
+
+        string sql = $"EXEC sp_InserirJogo {jogo.Data}', {jogo.EstadioId}";
         await sqlConnection.ExecuteAsync(sql);
         return Ok();
     }
@@ -1007,11 +1010,11 @@ public class JogadorController : ControllerBase
         {
             return BadRequest("Jogo não encontrado");
         }
-
+        
+        var parameters = $"{id}";
         if (!(jogo.Data > DateTime.Now))
         {
-            sql = $"UPDATE Jogo SET DataJogo = @DataJogo WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { jogo.Data, id });
+            parameters += $", '{jogo.Data}'";
         }
         else
         {
@@ -1026,10 +1029,10 @@ public class JogadorController : ControllerBase
             {
                 return BadRequest($"Estádio não encontrado: {jogo.EstadioId}.");
             }
-            sql = $"UPDATE Jogo SET EstadioId = @EstadioId WHERE Id = @id";
-            await sqlConnection.ExecuteAsync(sql, new { jogo.EstadioId, id });
         }
         
+        var sql2 = $"EXEC sp_AtualizarJogo {parameters}, {jogo.EstadioId}";
+        await sqlConnection.ExecuteAsync(sql2);
         return Ok("Jogo atualizado com sucesso");
     }
     
@@ -1040,14 +1043,12 @@ public class JogadorController : ControllerBase
         
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Jogo WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync($"EXEC sp_DeletarJogo {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Jogo deletado com sucesso");
         }
     }
-    
-    //TODO: CRUD Jogos
     
     private static async Task<Endereco?> ConsultarCep(string cep)
     {
