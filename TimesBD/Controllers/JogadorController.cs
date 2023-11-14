@@ -3,7 +3,6 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using TimesBD.Entities;
-using TimesBD.Models;
 
 namespace TimesBD.Controllers;
 
@@ -20,7 +19,7 @@ public class JogadorController : ControllerBase
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
     }
 
-    [HttpGet]
+    [HttpGet("Jogadores")]
     public async Task<IActionResult> Get([FromQuery(Name = "name")] string? name = null,
         [FromQuery(Name = "id")] int? id = null, [FromQuery(Name = "Cep")] string? cep = null,
         [FromHeader(Name = "Autentica")] string? autentica = null)
@@ -50,7 +49,7 @@ public class JogadorController : ControllerBase
         return Ok(jogadores);
     }
 
-    [HttpPatch]
+    [HttpPatch("Jogadores")]
     public async Task<IActionResult> Patch([FromQuery] int id, JogadorModel atualizaJogador,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
@@ -106,6 +105,7 @@ public class JogadorController : ControllerBase
         {
             return BadRequest("Data de nascimento não pode ser maior que a data atual ou menor que 100 anos atrás");
         }
+        
         if (jogador.TimeId != null)
         {
             if (jogador.TimeId <= 0)
@@ -137,7 +137,7 @@ public class JogadorController : ControllerBase
         return BadRequest("Cep inválido");
     }
 
-    [HttpDelete]
+    [HttpDelete("Jogadores")]
     public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
@@ -148,7 +148,7 @@ public class JogadorController : ControllerBase
 
         using (var sqlConnection = new SqlConnection(_connectionString))
         {
-            var linhaAfetada = await sqlConnection.ExecuteAsync("DELETE FROM Jogadores WHERE Id = @id", new { id });
+            var linhaAfetada = await sqlConnection.ExecuteAsync("EXEC sp_DeletarJogador {id}", new { id });
             return linhaAfetada == 0
                 ? NotFound("O id informado não foi encontrado")
                 : Ok("Jogador deletado com sucesso");
@@ -831,7 +831,7 @@ public class JogadorController : ControllerBase
         using var sqlConnection = new SqlConnection(_connectionString);
         var sql = $"SELECT * FROM Jogo {filtro}";
         var jogos = await sqlConnection.QueryAsync<Jogo>(sql, new { id, data, estadioId });
-        return Ok(jogos);
+        return Ok(jogos); 
     }
 
     [HttpPost("Jogos")]
@@ -930,8 +930,7 @@ public class JogadorController : ControllerBase
         }
         return null;
     }
-
-    private static bool ValidarAutenticacao(HttpRequest request) => request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica;
     
+    private static bool ValidarAutenticacao(HttpRequest request) => request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica;
 
 }

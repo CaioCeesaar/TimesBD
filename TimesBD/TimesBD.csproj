@@ -15,18 +15,5 @@
     <ItemGroup>
       <Compile Remove="Controllers\WeatherForecastController.cs" />
       <Compile Remove="WeatherForecast.cs" />
-      <Compile Remove="Controllers\EstadioController.cs" />
-      <Compile Remove="Models\JogadorModel.cs" />
-      <Compile Remove="Models\TimeModel.cs" />
-      <Compile Remove="Models\**" />
-    </ItemGroup>
-    <ItemGroup>
-      <EmbeddedResource Remove="Models\**" />
-    </ItemGroup>
-    <ItemGroup>
-      <Content Remove="Models\**" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Remove="Models\**" />
     </ItemGroup>
 </Project>

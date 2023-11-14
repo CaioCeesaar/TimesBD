@@ -1,20 +1,24 @@
-﻿namespace TimesBD.Entities
+﻿namespace TimesBD.Entities;
+
+public class Jogo
 {
-    public class Jogo
-    {
-            protected Jogo() { }
+    protected Jogo() { }
 
-            public Jogo(DateTime hora, DateTime data, int estadioId)
-            {
-                Hora = hora;
-                Data = data;
-                EstadioId = estadioId;
-            }
+    //public Jogo(string hora, string data, int estadioId)
+    //{
+    //    Hora = hora;
+    //    DataJogo = data;
+    //    EstadioId = estadioId;
+    //}
 
-            public int Id { get; set; }
-            public DateTime Hora { get; set; }
-            public DateTime Data { get; set; }
-            public int EstadioId { get; set; }
+    public int Id { get; set; }
+    public DateTime DataJogo { get; set; }
+    public int EstadioId { get; set; }
         
-    }
+}
+
+public class JogoPostPatch
+{
+    public DateTime Data { get; set; }
+    public int EstadioId { get; set; }
 }
