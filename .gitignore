@@ -75,3 +75,4 @@ TimesBD/obj/Debug/net7.0/TimesBD.MvcApplicationPartsAssemblyInfo.cs
 .vs/ProjectEvaluation/timesbd.metadata.v6.1
 .vs/ProjectEvaluation/timesbd.projects.v6.1
 .idea\.idea.TimesBD\.idea\.gitignore
+.vs/TimesBD/config/applicationhost.config
