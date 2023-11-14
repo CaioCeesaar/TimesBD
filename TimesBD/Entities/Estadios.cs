@@ -1,4 +1,6 @@
 ﻿namespace TimesBD.Entities
+﻿namespace TimesBD.Entities;
+public class Estadios
 {
     protected Estadios() { }
 
