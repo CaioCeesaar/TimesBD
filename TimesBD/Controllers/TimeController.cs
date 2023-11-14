@@ -4,7 +4,6 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using TimesBD.Entities;
-using TimesBD.Models;
 
 namespace TimesBD.Controllers;
 
