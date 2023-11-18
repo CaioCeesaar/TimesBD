@@ -3,6 +3,7 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using TimesBD.Entities;
+using TimesBD.Business;
 
 namespace TimesBD.Controllers;
 
@@ -12,48 +13,27 @@ public class JogadorController : ControllerBase
 {
     private readonly string _connectionString;
 
-    private const string Autentica = "d41d8cd98f00b204e9800998ecf8427e";
-
+    private readonly BusinessClass _businessClass;
     public JogadorController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        _businessClass = new(_connectionString);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery(Name = "name")] string? name = null,
-        [FromQuery(Name = "id")] int? id = null, [FromQuery(Name = "Cep")] string? cep = null,
-        [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> GetJogadoresById(
+        [FromQuery(Name = "id")] int? id = null
+        , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request))
-        {
-            return BadRequest("Autenticação inválida");
-        }
-
-        string filtro = "";
-        if (!String.IsNullOrEmpty(name))
-        {
-            filtro = "WHERE Nome = @name";
-        }
-        else if (id != null && id > 0)
-        {
-            filtro = "WHERE Id = @id";
-        }
-        else if (!String.IsNullOrEmpty(cep))
-        {
-            filtro = "WHERE Cep = @cep";
-        }
-
-        using var sqlConnection = new SqlConnection(_connectionString);
-        var sql = $"SELECT * FROM Jogadores {filtro}";
-        var jogadores = await sqlConnection.QueryAsync<Jogador>(sql, new { name, id, cep });
-        return Ok(jogadores);
+        var getJogador = await _businessClass.GetJogadorByIdAsync(autentica, id);
+        return Ok(getJogador);
     }
 
     [HttpPatch]
     public async Task<IActionResult> Patch([FromQuery] int id, JogadorModel atualizaJogador,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request))
+        if (!BusinessClass.ValidarAutenticacao(Request))
         {
             return BadRequest("Autenticação inválida");
         }
@@ -86,7 +66,7 @@ public class JogadorController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post(JogadorModel jogador, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request))
+        if (!BusinessClass.ValidarAutenticacao(Request))
         {
             return BadRequest("Autenticação inválida");
         }
@@ -140,7 +120,7 @@ public class JogadorController : ControllerBase
     public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request))
+        if (!BusinessClass.ValidarAutenticacao(Request))
         {
             return BadRequest("Autenticação inválida");
         }
@@ -167,7 +147,5 @@ public class JogadorController : ControllerBase
         }
         return null;
     }
-    
-    private static bool ValidarAutenticacao(HttpRequest request) => request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica;
 
 }

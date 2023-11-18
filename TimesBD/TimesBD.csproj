@@ -15,9 +15,15 @@
     <ItemGroup>
       <Compile Remove="Controllers\WeatherForecastController.cs" />
       <Compile Remove="WeatherForecast.cs" />
+      <Compile Remove="Models\**" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Business\" />
-      <Folder Include="Repositories\" />
+      <EmbeddedResource Remove="Models\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Remove="Models\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Models\**" />
     </ItemGroup>
 </Project>
