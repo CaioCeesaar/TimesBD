@@ -6,6 +6,8 @@ using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
 
+[Route("api/[controller]")]
+[ApiController]
 public class EstadioController : ControllerBase
 {
     private readonly string _connectionString;
@@ -70,7 +72,8 @@ public class EstadioController : ControllerBase
         if (endereco?.Cep is not null)
         {
             endereco.Localidade = endereco.Localidade.Replace("'", "''");
-            string sql = $"INSERT INTO Estadios (Nome, Limite, Cep, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi, Logradouro) OUTPUT INSERTED.Id VALUES ('{estadio.Nome}', {estadio.Limite}, '{endereco.Cep}', '{endereco.Complemento}','{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}')";
+            string sql =
+                $"EXEC sp_InserirEstadio '{estadio.Nome}', {estadio.Limite}, '{estadio.Cep}', '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
             await sqlConnection.ExecuteScalarAsync<int>(sql);
             return Ok();
         }
@@ -111,9 +114,10 @@ public class EstadioController : ControllerBase
         {
             return BadRequest("Cep inválido");
         }
-        endereco.Localidade.Replace("'", "''");
 
-        var sql2 = $"UPDATE Estadios SET Nome = '{estadio.Nome}', Limite = {estadio.Limite}, Cep = '{estadio.Cep}', Complemento = '{endereco.Complemento}', Bairro = '{endereco.Bairro}', Localidade = '{endereco.Localidade}', Uf = '{endereco.Uf}', Ibge = '{endereco.Ibge}', Gia = '{endereco.Gia}', Ddd = '{endereco.Ddd}', Siafi = '{endereco.Siafi}', Logradouro = '{endereco.Logradouro}' WHERE Id = {id}";
+        var replace = endereco.Localidade.Replace("'", "''");
+
+        var sql2 = $"EXEC sp_AtualizarEstadio {id}, '{estadio.Nome}', {estadio.Limite}, '{estadio.Cep}', '{endereco.Complemento}', '{endereco.Bairro}', '{replace}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
         await sqlConnection.ExecuteAsync(sql2);
         return Ok("Estadio atualizado com sucesso");
     }

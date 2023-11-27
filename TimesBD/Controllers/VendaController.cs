@@ -5,6 +5,8 @@ using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
 
+[Route("api/[controller]")]
+[ApiController]
 public class VendaController : ControllerBase
 {
     

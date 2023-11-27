@@ -58,7 +58,7 @@ public class JogadorController : ControllerBase
         }
         endereco.Localidade = endereco.Localidade.Replace("'", "''");
         
-        var sql2 = $"UPDATE Jogadores SET Nome = '{atualizaJogador.Nome}', DataNascimento = '{atualizaJogador.DataNascimento}', TimeId = {atualizaJogador.TimeId}, Cep = '{atualizaJogador.Cep}', Complemento = '{endereco.Complemento}', Bairro = '{endereco.Bairro}', Localidade = '{endereco.Localidade}', Uf = '{endereco.Uf}', Ibge = '{endereco.Ibge}', Gia = '{endereco.Gia}', Ddd = '{endereco.Ddd}', Siafi = '{endereco.Siafi}', Logradouro = '{endereco.Logradouro}' WHERE Id = {id}";
+        var sql2 = $"EXEC sp_AtualizarJogador {id}, '{atualizaJogador.Nome}', '{atualizaJogador.DataNascimento}', '{atualizaJogador.TimeId}', '{atualizaJogador.Cep}', '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
         await sqlConnection.ExecuteAsync(sql2);
         return Ok();
     }
@@ -109,7 +109,7 @@ public class JogadorController : ControllerBase
         if (endereco?.Cep is not null)
         {
             endereco.Localidade = endereco.Localidade.Replace("'", "''");
-            string sql = $"INSERT INTO Jogadores (Nome, DataNascimento, TimeId, Cep, Logradouro, Complemento, Bairro, Localidade, Uf, Ibge, Gia, Ddd, Siafi) OUTPUT INSERTED.Id VALUES ('{jogador.Nome}', '{jogador.DataNascimento}', {jogador.TimeId}, '{endereco.Cep}', '{endereco.Logradouro}', '{endereco.Complemento}','{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}')";
+            string sql = $"EXEC sp_InserirJogador '{jogador.Nome}', '{jogador.DataNascimento}', {jogador.TimeId}, '{jogador.Cep}', '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
             await sqlConnection.ExecuteScalarAsync<int>(sql);
             return Ok();
         }

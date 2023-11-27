@@ -5,6 +5,8 @@ using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
 
+[Route("api/[controller]")]
+[ApiController]
 public class JogoController : Controller
 {
     private readonly string _connectionString;

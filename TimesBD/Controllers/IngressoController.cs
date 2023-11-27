@@ -5,6 +5,8 @@ using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
 
+[Route("api/[controller]")]
+[ApiController]
 public class IngressoController : ControllerBase 
 {
     
@@ -60,20 +62,20 @@ public class IngressoController : ControllerBase
             return BadRequest("Valor não pode ser menor ou igual a zero");
         }
         
-        if (ingresso.PartidaId <= 0)
+        if (ingresso.JogoId <= 0)
         {
-            return BadRequest("PartidaId não pode ser menor ou igual a zero");
+            return BadRequest("JogoId não pode ser menor ou igual a zero");
         }
         
         // valida se a partida existe
-        var sqlPartida = $"SELECT * FROM Partida WHERE Id = {ingresso.PartidaId}";
+        var sqlPartida = $"SELECT * FROM Partida WHERE Id = {ingresso.JogoId}";
         var partida = await sqlConnection.QueryAsync<Partida>(sqlPartida);
         if (partida == null || !partida.Any())
         {
-            return BadRequest($"Partida não encontrada: {ingresso.PartidaId}.");
+            return BadRequest($"Jogo não encontrado: {ingresso.JogoId}.");
         }
         
-        string sql = $"EXEC sp_InserirIngresso {ingresso.Valor}, {ingresso.PartidaId}";
+        string sql = $"EXEC sp_InserirIngresso {ingresso.Valor}, {ingresso.JogoId}";
         await sqlConnection.ExecuteAsync(sql);
         return Ok();
     }
