@@ -36,5 +36,118 @@ public class BusinessClass
         return await _sqlRep.GetJogadorByIdAsync(sql);
        
     }
+    
+    public async Task<IEnumerable<Comprador>> GetCompradorByIdAsync(string? autentica, int? id)
+    {
+        //if (!BusinessClass.ValidarAutenticacao(Request))
+        //{
+        //    ("Autenticação inválida");
+        //}
+        var sql = $"SELECT * FROM Comprador ";
+        if (id is not null)
+        {
+            sql += $"WHERE Id = {id}";
+        }
+
+        return await _sqlRep.GetCompradorByIdAsync(sql);
+       
+    }
+    
+    public async Task<IEnumerable<Estadios>> GetEstadiosByIdAsync(string? autentica, int? id)
+    {
+        //if (!BusinessClass.ValidarAutenticacao(Request))
+        //{
+        //    ("Autenticação inválida");
+        //}
+        var sql = $"SELECT * FROM Estadios ";
+        if (id is not null)
+        {
+            sql += $"WHERE Id = {id}";
+        }
+
+        return await _sqlRep.GetEstadiosByIdAsync(sql);
+       
+    }
+    
+    public async Task<IEnumerable<Ingresso>> GetIngressoByIdAsync(string? autentica, int? id)
+    {
+        //if (!BusinessClass.ValidarAutenticacao(Request))
+        //{
+        //    ("Autenticação inválida");
+        //}
+        var sql = $"SELECT * FROM Ingresso ";
+        if (id is not null)
+        {
+            sql += $"WHERE Id = {id}";
+        }
+
+        return await _sqlRep.GetIngressoByIdAsync(sql);
+       
+    }
+    
+    public async Task<IEnumerable<Partida>> GetPartidaByIdAsync(string? autentica, int? id)
+    {
+        //if (!BusinessClass.ValidarAutenticacao(Request))
+        //{
+        //    ("Autenticação inválida");
+        //}
+        var sql = $"SELECT * FROM Partida ";
+        if (id is not null)
+        {
+            sql += $"WHERE Id = {id}";
+        }
+
+        return await _sqlRep.GetPartidaByIdAsync(sql);
+       
+    }
+    
+    public async Task<IEnumerable<Times>> GetTimeByIdAsync(string? autentica, int? id)
+    {
+        //if (!BusinessClass.ValidarAutenticacao(Request))
+        //{
+        //    ("Autenticação inválida");
+        //}
+        var sql = $"SELECT * FROM Times ";
+        if (id is not null)
+        {
+            sql += $"WHERE Id = {id}";
+        }
+
+        return await _sqlRep.GetTimeByIdAsync(sql);
+       
+    }
+    
+    public async Task<IEnumerable<Jogo>> GetJogoByIdAsync(string? autentica, int? id)
+    {
+        //if (!BusinessClass.ValidarAutenticacao(Request))
+        //{
+        //    ("Autenticação inválida");
+        //}
+        var sql = $"SELECT * FROM Jogo ";
+        if (id is not null)
+        {
+            sql += $"WHERE Id = {id}";
+        }
+
+        return await _sqlRep.GetJogoByIdAsync(sql);
+       
+    }
+    
+    public async Task<IEnumerable<Vendas>> GetVendaByIdAsync(string? autentica, int? id)
+    {
+        //if (!BusinessClass.ValidarAutenticacao(Request))
+        //{
+        //    ("Autenticação inválida");
+        //}
+        var sql = $"SELECT * FROM Vendas ";
+        if (id is not null)
+        {
+            sql += $"WHERE Id = {id}";
+        }
+
+        return await _sqlRep.GetVendaByIdAsync(sql);
+       
+    }
+        
     public static bool ValidarAutenticacao(HttpRequest request) => request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica; 
 }

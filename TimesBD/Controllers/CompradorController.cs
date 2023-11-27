@@ -2,6 +2,7 @@
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using TimesBD.Business;
 using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
@@ -11,36 +12,24 @@ namespace TimesBD.Controllers;
 public class CompradorController : ControllerBase
 {
     private readonly string _connectionString;
+    
+    private readonly BusinessClass _businessClass;
 
     private const string Autentica = "d41d8cd98f00b204e9800998ecf8427e";
 
     public CompradorController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        _businessClass = new(_connectionString);        
     }
     
     [HttpGet]
-    public async Task<IActionResult> Get([FromHeader(Name = "autentica")] string? autentica = null, [FromQuery(Name = "Nome")] string? nome = null, [FromQuery(Name = "CPF")] string? cpf = null)
+    public async Task<IActionResult> GetCompradoresById(
+        [FromQuery(Name = "id")] int? id = null
+        , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request))
-        {
-            return BadRequest("Autenticação inválida");
-        }
-        
-        string filtro = "";
-        if (!String.IsNullOrEmpty(nome))
-        {
-            filtro = "WHERE Nome = @nome";
-        }
-        else if (!String.IsNullOrEmpty(cpf))
-        {
-            filtro = "WHERE CPF = @cpf";
-        }
-        
-        using var sqlConnection = new SqlConnection(_connectionString);
-        var sql = $"SELECT * FROM Comprador {filtro}";
-        var compradores = await sqlConnection.QueryAsync<Comprador>(sql, new { nome, cpf });
-        return Ok(compradores);
+        var getComprador = await _businessClass.GetCompradorByIdAsync(autentica, id);
+        return Ok(getComprador);
     }
 
     [HttpPost]

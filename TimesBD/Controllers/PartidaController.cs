@@ -1,6 +1,7 @@
 ﻿using System.Data.SqlClient;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using TimesBD.Business;
 using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
@@ -11,34 +12,24 @@ public class PartidaController : ControllerBase
 {
     
     private readonly string _connectionString;
+    
+    private readonly BusinessClass _businessClass;
 
     private const string Autentica = "d41d8cd98f00b204e9800998ecf8427e";
 
     public PartidaController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        _businessClass = new(_connectionString);
     }
     
-        [HttpGet("Partidas")]
-    public async Task<IActionResult> Get([FromHeader(Name = "autentica")] string? autentica = null,
-        [FromQuery(Name = "id")] int? id = null)
+    [HttpGet("Partidas")]
+    public async Task<IActionResult> GetPartidasById(
+        [FromQuery(Name = "id")] int? id = null
+        , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request))
-        {
-            return BadRequest("Autenticação inválida");
-        }
-        
-        string filtro = "";
-        if (id != null && id > 0)
-        {
-            filtro = "WHERE Id = @id";
-        }
-        
-        using var sqlConnection = new SqlConnection(_connectionString);
-        var sql = $"SELECT * FROM Partida {filtro}";
-        var partidas = await sqlConnection.QueryAsync<Partida>(sql, new { id });
-
-        return Ok(partidas);
+        var getPartida = await _businessClass.GetPartidaByIdAsync(autentica, id);
+        return Ok(getPartida);
     }
 
     [HttpPost("Partidas")]

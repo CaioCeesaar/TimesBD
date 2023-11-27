@@ -2,6 +2,7 @@
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using TimesBD.Business;
 using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
@@ -12,30 +13,22 @@ public class TimeController : Controller
 {
     private readonly string _connectionString;
     
+    private readonly BusinessClass _businessClass;
+    
     private const string Autentica = "d41d8cd98f00b204e9800998ecf8427e";
     public TimeController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        _businessClass = new(_connectionString);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery(Name = "name")] string? name = null, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> GetTimesById(
+        [FromQuery(Name = "id")] int? id = null
+        , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request))
-        {
-            return BadRequest("Autenticação inválida");
-        }
-
-        string filtro = "";
-        if (!String.IsNullOrEmpty(name))
-        {
-            filtro = "WHERE Nome = @name";
-        }
-        
-        using var sqlConnection = new SqlConnection(_connectionString);
-        var sql = $"SELECT * FROM Times {filtro}";
-        var times = await sqlConnection.QueryAsync<Times>(sql, new { name });
-        return Ok(times);
+        var getTime = await _businessClass.GetTimeByIdAsync(autentica, id);
+        return Ok(getTime);
     }
 
     [HttpPatch]

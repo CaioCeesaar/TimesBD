@@ -1,6 +1,7 @@
 ﻿using System.Data.SqlClient;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using TimesBD.Business;
 using TimesBD.Entities;
 
 namespace TimesBD.Controllers;
@@ -11,38 +12,24 @@ public class VendaController : ControllerBase
 {
     
     private readonly string _connectionString;
+    
+    private readonly BusinessClass _businessClass;
 
     private const string Autentica = "d41d8cd98f00b204e9800998ecf8427e";
 
     public VendaController(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        _businessClass = new(_connectionString);
     }
     
     [HttpGet]
-    public async Task<IActionResult> Get([FromHeader(Name = "autentica")] string? autentica = null, [FromQuery(Name = "id")] int? id = null, [FromQuery(Name = "compradorId")] int? compradorId = null, [FromQuery(Name = "ingressoId")] int? ingressoId = null)
+    public async Task<IActionResult> GetVendasById(
+        [FromQuery(Name = "id")] int? id = null
+        , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        if (!ValidarAutenticacao(Request)) return BadRequest("Autenticação inválida");
-        
-        string filtro = "";
-        if (id != null && id > 0)
-        {
-            filtro = "WHERE Id = @id";
-        }
-        else if (compradorId != null && compradorId > 0)
-        {
-            filtro = "WHERE CompradorId = @compradorId";
-        }
-        else if (ingressoId != null && ingressoId > 0)
-        {
-            filtro = "WHERE IngressoId = @ingressoId";
-        }
-        
-        using var sqlConnection = new SqlConnection(_connectionString);
-        var sql = $"SELECT * FROM Vendas {filtro}";
-        var vendas = await sqlConnection.QueryAsync<Vendas>(sql, new { id, compradorId, ingressoId });
-
-        return Ok(vendas);
+        var getVenda = await _businessClass.GetVendaByIdAsync(autentica, id);
+        return Ok(getVenda);
     }
     
     [HttpPost]
