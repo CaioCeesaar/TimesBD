@@ -4,6 +4,8 @@ using System.Data.SqlClient;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Newtonsoft.Json;
 using TimesBD.Entities;
 using TimesBD.Repositories;
 
@@ -16,9 +18,13 @@ public class BusinessClass
     private readonly string _connectionString;
 
     private readonly SqlRep _sqlRep;
+
+    private readonly ApiRep _apiRep;
+
     public BusinessClass(string connectionString)
     {
         _sqlRep = new(connectionString);
+        _apiRep = new();
     }
 
     public async Task<IEnumerable<Jogador>> GetJogadorByIdAsync(string? autentica, int? id)
@@ -33,7 +39,7 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetJogadorByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Jogador>(sql);
        
     }
     
@@ -49,7 +55,7 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetCompradorByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Comprador>(sql);
        
     }
     
@@ -65,7 +71,7 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetEstadiosByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Estadios>(sql);
        
     }
     
@@ -81,7 +87,7 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetIngressoByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Ingresso>(sql);
        
     }
     
@@ -97,7 +103,7 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetPartidaByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Partida>(sql);
        
     }
     
@@ -113,7 +119,7 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetTimeByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Times>(sql);
        
     }
     
@@ -129,7 +135,7 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetJogoByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Jogo>(sql);
        
     }
     
@@ -145,9 +151,27 @@ public class BusinessClass
             sql += $"WHERE Id = {id}";
         }
 
-        return await _sqlRep.GetVendaByIdAsync(sql);
+        return await _sqlRep.GetQueryAsync<Vendas>(sql);
        
     }
         
+    public async Task InserirJogadorAsync(string nome, DateTime dataNascimento, int timeId, string cep)
+    {
+        var endereco = await _apiRep.ConsultarCep(cep);
+        if (endereco is not null)
+        {
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            var sql = $"EXEC sp_InserirJogador '{nome}', {dataNascimento}, {timeId}, {cep}, {endereco.Complemento}, {endereco.Bairro}, {endereco.Localidade}, {endereco.Uf}, {endereco.Ibge}, {endereco.Gia}, {endereco.Ddd}, {endereco.Siafi}, {endereco.Logradouro}";
+            
+            await _sqlRep.InserirJogadorAsync(sql);
+        }
+    }
+    
+    public async Task DeletarJogadorAsync(int id)
+    {
+        var sql = $"EXEC sp_DeletarJogador {id}";
+        await _sqlRep.DeletarJogadorAsync(sql);
+    }
+    
     public static bool ValidarAutenticacao(HttpRequest request) => request.Headers.TryGetValue("autentica", out var autentica) && autentica == Autentica; 
 }
