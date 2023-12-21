@@ -6,37 +6,37 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EstadioController : ControllerBase
+public class IngressoController : ControllerBase 
 {
     private readonly BusinessClass _businessClass;
 
-    public EstadioController(IConfiguration configuration)
+    public IngressoController(IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
         _businessClass = new(connectionString);
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetEstadiosById(
+    public async Task<IActionResult> GetIngressosById(
         [FromQuery(Name = "id")] int? id = null
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var getEstadio = await _businessClass.GetEstadiosByIdAsync(autentica, id);
-        return Ok(getEstadio);
+        var getIngresso = await _businessClass.GetIngressoByIdAsync(autentica, id);
+        return Ok(getIngresso);
     }
     
     [HttpPatch]
-    public async Task<IActionResult> Patch([FromQuery] int id, EstadiosModel atualizaEstadio,
+    public async Task<IActionResult> Patch([FromQuery] int id, IngressoPost atualizaIngresso,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.AtualizarEstadioAsync(id, atualizaEstadio.Nome, atualizaEstadio.Limite, atualizaEstadio.Cep);
+        await _businessClass.AtualizarIngressoAsync(id, atualizaIngresso.Valor, atualizaIngresso.JogoId);
         return Ok();
     }
     
     [HttpPost]
-    public async Task<IActionResult> Post(EstadiosModel estadio, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> Post(IngressoPost ingresso, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var result = await _businessClass.InserirEstadioAsync(estadio.Nome, estadio.Limite, estadio.Cep);
+        var result = await _businessClass.InserirIngressoAsync(ingresso.Valor, ingresso.JogoId);
         return Ok(result);
     }
     
@@ -44,8 +44,7 @@ public class EstadioController : ControllerBase
     public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.DeletarEstadioAsync(id);
+        await _businessClass.DeletarIngressoAsync(id);
         return Ok();
     }
-    
 }
