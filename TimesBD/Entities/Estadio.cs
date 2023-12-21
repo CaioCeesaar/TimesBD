@@ -1,9 +1,9 @@
 ﻿namespace TimesBD.Entities;
-public class Estadios
+public class Estadio
 {
-    protected Estadios() { }
+    protected Estadio() { }
 
-    public Estadios(string nome, int limite, string cep, string logradouro, string complemento, string bairro, string localidade, string uf, string ibge, string gia, string ddd, string siafi)
+    public Estadio(string nome, int limite, string cep, string logradouro, string complemento, string bairro, string localidade, string uf, string ibge, string gia, string ddd, string siafi)
     {
         Nome = nome;
         Limite = limite;

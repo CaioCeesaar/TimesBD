@@ -45,7 +45,7 @@ public class JogadorModel
     
     public DateTime DataNascimento { get; set; }
     
-    public int? TimeId { get; set; }
+    public int TimeId { get; set; }
     
     public string Cep { get; set; }
 }   

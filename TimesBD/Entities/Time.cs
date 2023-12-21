@@ -1,10 +1,10 @@
 ﻿namespace TimesBD.Entities;
 
-public class Times
+public class Time
 {
-    protected Times(){}
+    protected Time(){}
     
-    public Times(string nome, string cep, string logradouro, string bairro, string localidade, string complemento, string uf, string ibge, string gia, string ddd, string siafi)
+    public Time(string nome, string cep, string logradouro, string bairro, string localidade, string complemento, string uf, string ibge, string gia, string ddd, string siafi)
     {
         Nome = nome;
         Cep = cep;

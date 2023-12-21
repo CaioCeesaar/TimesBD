@@ -6,12 +6,7 @@ namespace TimesBD.Repositories
     public class ApiRep
     {
 
-        private readonly HttpClient _httpClient;
-
-        public ApiRep()
-        {
-            _httpClient = new HttpClient();
-        }
+        private readonly HttpClient _httpClient = new();
 
         public async Task<Endereco?> ConsultarCep(string cep)
         {

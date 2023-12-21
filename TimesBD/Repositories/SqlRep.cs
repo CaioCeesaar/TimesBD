@@ -1,6 +1,7 @@
 ﻿using Dapper;
+using System.Data;
 using System.Data.SqlClient;
-using TimesBD.Entities;
+using TimesBD.Business;
 
 namespace TimesBD.Repositories;
 
@@ -10,26 +11,71 @@ public class SqlRep
     public SqlRep(string connectionString)
     {
         _connection = new SqlConnection(connectionString);
+        Reconnect();
     }
 
     public async Task<IEnumerable<T>> GetQueryAsync<T> (string select) where T : class
     {
-        _connection.Close();
-        _connection.Open();
+        Reconnect();
         return await _connection.QueryAsync<T>(select);
     }
     
-    public async Task InserirJogadorAsync(string insert)
+    public async Task<Result> PostQueryAsync(string insert)
     {
-        _connection.Close();
-        _connection.Open();
-        await _connection.ExecuteAsync(insert);
+        try
+        {
+            Reconnect();
+            var ins = await _connection.ExecuteAsync(insert);
+      
+            return new(true, "Ok");
+        }
+        catch (Exception ex)
+        {
+            return new(false, "Deu ruim");
+        }
+    }
+    
+    public async Task<string> PatchQueryAsync(string update)
+    {
+        try
+        {
+            Reconnect();
+            var upd = await _connection.ExecuteAsync(update);
+            return upd.ToString();
+        }
+        catch (DBConcurrencyException exConcurrency)
+        {
+            return $"{exConcurrency.Message} - {exConcurrency.StackTrace}";
+        }
+        catch (SqlException exSql)
+        {
+            return $"{exSql.Message} - {exSql.StackTrace}";
+        }
+        catch (Exception ex)
+        {
+            return $"{ex.Message} - {ex.StackTrace}";
+        }
     }
 
-    public async Task DeletarJogadorAsync(string delete)
+    public async Task<string> DeleteQueryAsync(string delete)
     {
-        _connection.Close();
-        _connection.Open();
-        await _connection.QueryAsync(delete);
+        try
+        {
+            Reconnect();
+            var del = await _connection.QueryAsync(delete);
+            return del.ToString();
+        }
+        catch (Exception ex)
+        {
+            return $"{ex.Message} - {ex.StackTrace}";
+        }
+    }
+
+    private void Reconnect()
+    {
+        if (_connection.State == ConnectionState.Closed)
+        {
+            _connection.Open();
+        }
     }
 }
