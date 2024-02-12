@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TimesBD.Business;
 using TimesBD.Entities;
 
@@ -7,8 +6,10 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TimeController : TimeDbControllerBase
+public class TimeController : ControllerBase
 {
+    private readonly BusinessClass _businessClass;
+
     public TimeController(IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
@@ -17,33 +18,33 @@ public class TimeController : TimeDbControllerBase
     
     [HttpGet]
     public async Task<IActionResult> GetTimesById(
-        [FromQuery(Name = "id")] int id
+        [FromQuery(Name = "id")] int? id = null
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getTime) = await _businessClass.GetTimeByIdAsync(id);
-        return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getTime)));
+        var getTime = await _businessClass.GetTimeByIdAsync(autentica, id);
+        return Ok(getTime);
     }
     
     [HttpPatch]
-    public async Task<Result> Patch([FromQuery] int id, TimeModel atualizaTime,
+    public async Task<IActionResult> Patch([FromQuery] int id, TimeModel atualizaTime,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.AtualizarTimeAsync(id, atualizaTime.Nome, atualizaTime.Cep);
-        return new Result(true, "Time atualizado com sucesso!");
+        return Ok();
     }
     
     [HttpPost]
-    public async Task<Result> Post(TimeModel time, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> Post(TimeModel time, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.InserirTimeAsync(time.Nome, time.Cep);
-        return new Result(true, "Time inserido com sucesso!");
+        var result = await _businessClass.InserirTimeAsync(time.Nome, time.Cep);
+        return Ok(result);
     }
     
     [HttpDelete]
-    public async Task<Result> Delete([FromQuery] int id,
+    public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.DeletarTimeAsync(id);
-        return new Result(true, "Time deletado com sucesso!");
+        return Ok();
     }
 }

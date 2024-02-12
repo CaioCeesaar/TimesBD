@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TimesBD.Business;
 using TimesBD.Entities;
 
@@ -7,8 +6,10 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CompradorController : TimeDbControllerBase
+public class CompradorController : ControllerBase
 {
+    private readonly BusinessClass _businessClass;
+
     public CompradorController(IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
@@ -17,33 +18,34 @@ public class CompradorController : TimeDbControllerBase
     
     [HttpGet]
     public async Task<IActionResult> GetCompradoresById(
-        [FromQuery(Name = "id")] int id, [FromHeader(Name = "Autentica")] string? autentica = null)
+        [FromQuery(Name = "id")] int? id = null
+        , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getComprador) = await _businessClass.GetCompradorByIdAsync(id);
-        return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getComprador)));
+        var getComprador = await _businessClass.GetCompradorByIdAsync(autentica, id);
+        return Ok(getComprador);
     }
     
     [HttpPatch]
-    public async Task<Result> Patch([FromQuery] int id, CompradorPostPatch atualizaComprador,
+    public async Task<IActionResult> Patch([FromQuery] int id, CompradorPostPatch atualizaComprador,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.AtualizarCompradorAsync(id, atualizaComprador.Nome, atualizaComprador.Cpf);
-        return new Result(true, "Comprador atualizado com sucesso!");
+        await _businessClass.AtualizarCompradorAsync(id, atualizaComprador.Nome, atualizaComprador.CPF);
+        return Ok();
     }
     
     [HttpPost]
-    public async Task<Result> Post(CompradorPostPatch comprador, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> Post(CompradorPostPatch comprador, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.InserirCompradorAsync(comprador.Nome, comprador.Cpf);
-        return new Result(true, "Comprador inserido com sucesso!");
+        var result = await _businessClass.InserirCompradorAsync(comprador.Nome, comprador.CPF);
+        return Ok(result);
     }
     
     [HttpDelete]
-    public async Task<Result> Delete([FromQuery] int id,
+    public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.DeletarCompradorAsync(id);
-        return new Result(true, "Comprador deletado com sucesso!");
+        return Ok();
     }
     
 }

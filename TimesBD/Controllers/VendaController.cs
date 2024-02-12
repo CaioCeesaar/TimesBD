@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TimesBD.Business;
 using TimesBD.Entities;
 
@@ -7,8 +6,10 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class VendaController : TimeDbControllerBase
+public class VendaController : ControllerBase
 {
+    private readonly BusinessClass _businessClass;
+
     public VendaController(IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
@@ -17,25 +18,25 @@ public class VendaController : TimeDbControllerBase
     
     [HttpGet]
     public async Task<IActionResult> GetVendasById(
-        [FromQuery(Name = "id")] int id
+        [FromQuery(Name = "id")] int? id = null
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getVenda) = await _businessClass.GetVendaByIdAsync(id);
-        return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getVenda)));
+        var getVenda = await _businessClass.GetVendaByIdAsync(autentica, id);
+        return Ok(getVenda);
     }
     
     [HttpPost]
-    public async Task<Result> Post(VendasPostPatch venda, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> Post(VendasPostPatch venda, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.InserirVendaAsync(venda.DataVenda, venda.CompradorId, venda.IngressoId);
-        return new Result(true, "Venda inserida com sucesso!");
+        var result = await _businessClass.InserirVendaAsync(venda.DataVenda, venda.CompradorId, venda.IngressoId);
+        return Ok(result);
     }
     
     [HttpDelete]
-    public async Task<Result> Delete([FromQuery] int id,
+    public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.DeletarVendaAsync(id);
-        return new Result(true, "Venda deletada com sucesso!");
+        return Ok();
     }
 }

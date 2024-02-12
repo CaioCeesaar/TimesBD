@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TimesBD.Business;
 using TimesBD.Entities;
 
@@ -7,8 +6,10 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EstadioController : TimeDbControllerBase
+public class EstadioController : ControllerBase
 {
+    private readonly BusinessClass _businessClass;
+
     public EstadioController(IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
@@ -17,33 +18,34 @@ public class EstadioController : TimeDbControllerBase
     
     [HttpGet]
     public async Task<IActionResult> GetEstadiosById(
-        [FromQuery(Name = "id")] int id
+        [FromQuery(Name = "id")] int? id = null
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getEstadio) = await _businessClass.GetEstadiosByIdAsync(id);
-        return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getEstadio)));
+        var getEstadio = await _businessClass.GetEstadiosByIdAsync(autentica, id);
+        return Ok(getEstadio);
     }
     
     [HttpPatch]
-    public async Task<Result> Patch([FromQuery] int id, EstadiosModel atualizaEstadio,
+    public async Task<IActionResult> Patch([FromQuery] int id, EstadiosModel atualizaEstadio,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.AtualizarEstadioAsync(id, atualizaEstadio.Nome, atualizaEstadio.Limite, atualizaEstadio.Cep);
-        return new Result(true, "Estadio atualizado com sucesso!");
+        return Ok();
     }
     
     [HttpPost]
-    public async Task<Result> Post(EstadiosModel estadio, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> Post(EstadiosModel estadio, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.InserirEstadioAsync(estadio.Nome, estadio.Limite, estadio.Cep);
-        return new Result(true, "Estadio inserido com sucesso!");
+        var result = await _businessClass.InserirEstadioAsync(estadio.Nome, estadio.Limite, estadio.Cep);
+        return Ok(result);
     }
     
     [HttpDelete]
-    public async Task<Result> Delete([FromQuery] int id,
+    public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.DeletarEstadioAsync(id);
-        return new Result(true, "Estadio deletado com sucesso!");
+        return Ok();
     }
+    
 }

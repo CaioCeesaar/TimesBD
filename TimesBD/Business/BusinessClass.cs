@@ -17,44 +17,44 @@ public class BusinessClass
         _apiRep = new();
     }
 
-    public async Task<(Result, IEnumerable<Jogador>?)> GetJogadorByIdAsync(int id)
+    public async Task<IEnumerable<Jogador>> GetJogadorByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetJogadorAsync<Jogador>(id);
+        return await GetEntityByIdAsync<Jogador>(id);
     }
     
-    public async Task<(Result, IEnumerable<Comprador>?)> GetCompradorByIdAsync(int id)
+    public async Task<IEnumerable<Comprador>> GetCompradorByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetCompradorAsync<Comprador>(id);
+        return await GetEntityByIdAsync<Comprador>(id);
     }
     
-    public async Task<(Result, IEnumerable<Estadio>?)> GetEstadiosByIdAsync(int id)
+    public async Task<IEnumerable<Estadio>> GetEstadiosByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetEstadioAsync<Estadio>(id);
+        return await GetEntityByIdAsync<Estadio>(id);
     }
     
-    public async Task<(Result, IEnumerable<Ingresso>?)> GetIngressoByIdAsync(int id)
+    public async Task<IEnumerable<Ingresso>> GetIngressoByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetIngressoAsync<Ingresso>(id);
+        return await GetEntityByIdAsync<Ingresso>(id);
     }
     
-    public async Task<(Result, IEnumerable<Partida>?)> GetPartidaByIdAsync(int id)
+    public async Task<IEnumerable<Partida>> GetPartidaByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetPartidaAsync<Partida>(id);
+        return await GetEntityByIdAsync<Partida>(id);
     }
     
-    public async Task<(Result, IEnumerable<Time>?)> GetTimeByIdAsync(int id)
+    public async Task<IEnumerable<Time>> GetTimeByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetTimeAsync<Time>(id);
+        return await GetEntityByIdAsync<Time>(id);  
     }
     
-    public async Task<(Result, IEnumerable<Jogo>?)> GetJogoByIdAsync(int id)
+    public async Task<IEnumerable<Jogo>> GetJogoByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetJogoAsync<Jogo>(id);
+        return await GetEntityByIdAsync<Jogo>(id);
     }
     
-    public async Task<(Result, IEnumerable<Venda>?)> GetVendaByIdAsync(int id)
+    public async Task<IEnumerable<Venda>> GetVendaByIdAsync(string? autentica, int? id)
     {
-        return await _sqlRep.GetVendaAsync<Venda>(id);
+        return await GetEntityByIdAsync<Venda>(id);
     }
         
     public async Task<Result> InserirJogadorAsync(string? nome, DateTime? dataNascimento, int timeId, string cep)
@@ -81,8 +81,7 @@ public class BusinessClass
             return new Result(false, "TimeId não pode ser menor ou igual a 0");
         }
         
-        var time = (await GetTimeByIdAsync(timeId)).Item2;
-        if (time != null && !time.Any())
+        if (!(await GetTimeByIdAsync(null, timeId)).Any())
         {
             return new Result(false, "TimeId não existe, insira um time válido");
         }
@@ -90,7 +89,11 @@ public class BusinessClass
         var endereco = await _apiRep.ConsultarCep(cep);
         if (endereco is not null)
         {
-            return await _sqlRep.CreateJogadorAsync(nome, dataNascimento, timeId, cep, endereco.Complemento, endereco.Bairro, endereco.Localidade.Replace("'", "''"), endereco.Uf, endereco.Ibge, endereco.Gia, endereco.Ddd, endereco.Siafi, endereco.Logradouro);
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            var sql = $"EXEC sp_InserirJogador '{nome}', '{dataNascimento}', {timeId}, '{cep}', '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
+            
+            return await _sqlRep.PostQueryAsync(sql);
+            
         }
         return new Result(false, "Cep inválido");
     }
@@ -112,7 +115,8 @@ public class BusinessClass
             return new Result(false, "CPF inválido");
         }
         
-        return await _sqlRep.CreateCompradorAsync(nome, cpf);
+        var sql = $"EXEC sp_InserirComprador '{nome}', '{cpf}'";
+        return await _sqlRep.PostQueryAsync(sql);
     }
     
     public async Task<Result> InserirEstadioAsync(string? nome, int limite, string cep)
@@ -130,8 +134,11 @@ public class BusinessClass
         var endereco = await _apiRep.ConsultarCep(cep);
         if (endereco is not null)
         {
-            return await _sqlRep.CreateEstadioAsync(nome, limite, cep, endereco.Complemento, endereco.Bairro, 
-                endereco.Localidade.Replace("'", "''"), endereco.Uf, endereco.Ibge, endereco.Gia, endereco.Ddd, endereco.Siafi, endereco.Logradouro);
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            var sql = $"EXEC sp_InserirEstadio '{nome}', {limite}, '{cep}', '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
+            
+            return await _sqlRep.PostQueryAsync(sql);
+            
         }
         return new Result(false, "Cep inválido");
     }
@@ -142,37 +149,42 @@ public class BusinessClass
         {
             return new Result(false, "Valor não pode ser menor ou igual a 0");
         }
-
-        var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
-        if (jogo != null && !jogo.Any())
+        
+        if (!(await GetJogoByIdAsync(null, jogoId)).Any())
         {
             return new Result(false, "JogoId não existe, insira um jogo válido");
         }
-
-        return await _sqlRep.CreateIngressoAsync(valor, jogoId);
+        
+        var sql = $"EXEC sp_InserirIngresso {valor}, {jogoId}";
+            
+        return await _sqlRep.PostQueryAsync(sql);
     }
 
-    public async Task<Result> InserirPartidaAsync(int timeId, int jogoId, int estadioId)
+    public async Task<Result> InserirPartidaAsync(int? timeId, int? jogoId, int? estadioId)
     {
-            var time = (await GetTimeByIdAsync(timeId)).Item2;
-            if (time != null && !time.Any())
+        if (timeId != null && jogoId != null && estadioId != null)
+        {
+            if (!(await GetTimeByIdAsync(null, timeId)).Any())
             {
-                return new Result(false, "TimeId não existe, insira um time válido");
+                return new Result(false, "Time não existe, insira um id de time válido");
             }
         
-            var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
-            if (jogo != null && !jogo.Any())
+            if (!(await GetJogoByIdAsync(null, jogoId)).Any())
             {
-                return new Result(false, "JogoId não existe, insira um jogo válido");
+                return new Result(false, "Jogo não existe, insira um id de jogo válido");
             }
         
-            var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
-            if (estadio != null && !estadio.Any())
+            if (!(await GetEstadiosByIdAsync(null, estadioId)).Any())
             {
                 return new Result(false, "EstadioId não existe, insira um id de estadio válido");
             }
+        
+            var sql = $"EXEC sp_InserirPartida {timeId}, {jogoId}, {estadioId}";
+            
+            return await _sqlRep.PostQueryAsync(sql);
+        }
 
-            return await _sqlRep.CreatePartidaAsync(timeId, jogoId, estadioId);
+        return new Result(false, "timeId, jogoId ou estadioId não podem ser nulos");
     }
     
     public async Task<Result> InserirTimeAsync(string? nome, string cep)
@@ -185,8 +197,10 @@ public class BusinessClass
         var endereco = await _apiRep.ConsultarCep(cep);
         if (endereco is not null)
         {
-            return await _sqlRep.CreateTimeAsync(nome, cep, endereco.Complemento, endereco.Bairro, endereco.Localidade.Replace("'", "''"),
-                endereco.Uf, endereco.Ibge, endereco.Gia, endereco.Ddd, endereco.Siafi, endereco.Logradouro);
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            var sql = $"EXEC sp_InserirTime '{nome}', {cep}, '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
+            
+            return await _sqlRep.PostQueryAsync(sql);
         }
         
         return new Result(false, "Cep inválido");
@@ -199,32 +213,33 @@ public class BusinessClass
             return new Result(false, "Data não pode ser nula");
         }
         
-        var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
-        if (estadio != null && !estadio.Any())
+        if (!(await GetEstadiosByIdAsync(null, estadioId)).Any())
         {
-            return new Result(false, "EstadioId não existe, insira um id de estadio válido");
+            return new Result(false, "EstadioId não existe, insira um estadio válido");
         }
-
-        return await _sqlRep.CreateJogoAsync(data, estadioId);
+        
+        var sql = $"EXEC sp_InserirJogo '{data}', {estadioId}";
+            
+        return await _sqlRep.PostQueryAsync(sql);
     }
     
-    public async Task<Result> InserirVendaAsync(DateTime? dataVenda, int compradorId, int ingressoId)
+    public async Task<Result> InserirVendaAsync(DateTime? dataVenda, int? compradorId, int? ingressoId)
     {
-        if (dataVenda != null)
+        if (dataVenda != null && compradorId != null && ingressoId != null)
         {
-            var compradors = (await GetCompradorByIdAsync(compradorId)).Item2;
-            if (compradors != null && !compradors.Any())
+            if (!(await GetCompradorByIdAsync(null, compradorId)).Any())
             {
                 return new Result(false, "CompradorId não existe, insira um comprador válido");
             }
-
-            var ingresso = (await GetIngressoByIdAsync(ingressoId)).Item2;
-            if (ingresso != null && !ingresso.Any())
+        
+            if (!(await GetIngressoByIdAsync(null, ingressoId)).Any())
             {
                 return new Result(false, "IngressoId não existe, insira um ingresso válido");
             }
-
-            return await _sqlRep.CreateVendaAsync(dataVenda, compradorId, ingressoId);
+        
+            var sql = $"EXEC sp_InserirVenda '{dataVenda}', {compradorId}, {ingressoId}";
+            
+            return await _sqlRep.PostQueryAsync(sql);
         }
         
         return new Result(false, "dataVenda, compradorId ou ingressoId não podem ser nulos");
@@ -232,8 +247,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarJogadorAsync(int id, string? nome, DateTime? dataNascimento, int timeId, string cep)
     {
-        var jogador = (await GetJogadorByIdAsync(id)).Item2;
-        if (jogador != null && !jogador.Any())
+        if (!(await GetJogadorByIdAsync(null, id)).Any())
         {
             return new Result(false, "Jogador não existe");
         }
@@ -260,8 +274,7 @@ public class BusinessClass
             return new Result(false, "TimeId não pode ser menor ou igual a 0");
         }
         
-        var time = (await GetTimeByIdAsync(timeId)).Item2;
-        if (time != null && !time.Any())
+        if (!(await GetTimeByIdAsync(null, timeId)).Any())
         {
             return new Result(false, "TimeId não existe, insira um time válido");
         }
@@ -269,7 +282,11 @@ public class BusinessClass
         var endereco = await _apiRep.ConsultarCep(cep);
         if (endereco is not null)
         {
-            await _sqlRep.UpdateJogadorAsync(id, nome, dataNascimento, timeId, cep, endereco.Complemento, endereco.Bairro, endereco.Localidade.Replace("'", "''"), endereco.Uf, endereco.Ibge, endereco.Gia, endereco.Ddd, endereco.Siafi, endereco.Logradouro);
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            var sql =
+                $"EXEC sp_AtualizarJogador {id}, '{nome}', '{dataNascimento}', {timeId}, {cep}, '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
+
+            await _sqlRep.PatchQueryAsync(sql);
             return new Result(true, "Jogador atualizado com sucesso");
         }
         return new Result(false, "Cep inválido");
@@ -277,8 +294,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarCompradorAsync(int id, string? nome, string? cpf)
     {
-        var comprador = (await GetCompradorByIdAsync(id)).Item2;
-        if (comprador != null && !comprador.Any())
+        if (!(await GetCompradorByIdAsync(null, id)).Any())
         {
             return new Result(false, "Comprador não existe");
         }
@@ -298,16 +314,16 @@ public class BusinessClass
             return new Result(false, "CPF inválido");
         }
         
-        await _sqlRep.UpdateCompradorAsync(id, nome, cpf);
+        var sql = $"EXEC sp_AtualizarComprador {id}, '{nome}', '{cpf}'";
+        await _sqlRep.PatchQueryAsync(sql);
         return new Result(true, "Comprador atualizado com sucesso");
     }
     
     public async Task<Result> AtualizarEstadioAsync(int id, string? nome, int limite, string cep)
     {
-        var estadio = (await GetEstadiosByIdAsync(id)).Item2;
-        if (estadio != null && !estadio.Any())
+        if (!(await GetEstadiosByIdAsync(null, id)).Any())
         {
-            return new Result(false, "EstadioId não existe, insira um id de estadio válido");
+            return new Result(false, "Estadio não existe");
         }
         
         if (nome is null)
@@ -323,7 +339,11 @@ public class BusinessClass
         var endereco = await _apiRep.ConsultarCep(cep);
         if (endereco is not null)
         {
-            await _sqlRep.UpdateEstadioAsync(id, nome, limite, cep, endereco.Complemento, endereco.Bairro, endereco.Localidade.Replace("'", "''"), endereco.Uf, endereco.Ibge, endereco.Gia, endereco.Ddd, endereco.Siafi, endereco.Logradouro);
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            var sql =
+                $"EXEC sp_AtualizarEstadio {id}, '{nome}', {limite},'{cep}', '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
+
+            await _sqlRep.PatchQueryAsync(sql);
             return new Result(true, "Estadio atualizado com sucesso");
         }
         return new Result(false, "Cep inválido");
@@ -331,10 +351,9 @@ public class BusinessClass
     
     public async Task<Result> AtualizarTimeAsync(int id, string? nome, string cep)
     {
-        var time = (await GetTimeByIdAsync(id)).Item2;
-        if (time != null && !time.Any())
+        if (!(await GetTimeByIdAsync(null, id)).Any())
         {
-            return new Result(false, "TimeId não existe, insira um time válido");
+            return new Result(false, "Time não existe");
         }
         
         if (nome is null)
@@ -345,8 +364,11 @@ public class BusinessClass
         var endereco = await _apiRep.ConsultarCep(cep);
         if (endereco is not null)
         {
-            await _sqlRep.UpdateTimeAsync(id, nome, cep, endereco.Complemento, endereco.Bairro, endereco.Localidade.Replace("'", "''"),
-                endereco.Uf, endereco.Ibge, endereco.Gia, endereco.Ddd, endereco.Siafi, endereco.Logradouro);
+            endereco.Localidade = endereco.Localidade.Replace("'", "''");
+            var sql =
+                $"EXEC sp_AtualizarTime {id}, '{nome}', {cep}, '{endereco.Complemento}', '{endereco.Bairro}', '{endereco.Localidade}', '{endereco.Uf}', '{endereco.Ibge}', '{endereco.Gia}', '{endereco.Ddd}', '{endereco.Siafi}', '{endereco.Logradouro}'";
+
+            await _sqlRep.PatchQueryAsync(sql);
             return new Result(true, "Time atualizado com sucesso");
         }
         return new Result(false, "Cep inválido");
@@ -354,8 +376,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarIngressoAsync(int id, double valor, int jogoId)
     {
-        var ingresso = (await GetIngressoByIdAsync(id)).Item2;
-        if (ingresso != null && !ingresso.Any())
+        if (!(await GetIngressoByIdAsync(null, id)).Any())
         {
             return new Result(false, "Ingresso não existe");
         }
@@ -365,8 +386,7 @@ public class BusinessClass
             return new Result(false, "Valor não pode ser menor ou igual a 0");
         }
         
-        var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
-        if (jogo != null && !jogo.Any())
+        if (!(await GetJogoByIdAsync(null, jogoId)).Any())
         {
             return new Result(false, "JogoId não existe, insira um jogo válido");
         }
@@ -379,10 +399,9 @@ public class BusinessClass
     
     public async Task<Result> AtualizarJogoAsync(int id, DateTime? data, int estadioId)
     {
-        var jogo = (await GetJogoByIdAsync(id)).Item2;
-        if (jogo != null && !jogo.Any())
+        if (!(await GetJogoByIdAsync(null, id)).Any())
         {
-            return new Result(false, "JogoId não existe, insira um jogo válido");
+            return new Result(false, "Jogo não existe");
         }
         
         if (data != null)
@@ -390,84 +409,88 @@ public class BusinessClass
             return new Result(false, "Data não pode ser nula");
         }
         
-        var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
-        if (estadio != null && !estadio.Any())
+        if (!(await GetEstadiosByIdAsync(null, estadioId)).Any())
         {
-            return new Result(false, "EstadioId não existe, insira um id de estadio válido");
+            return new Result(false, "EstadioId não existe, insira um estadio válido");
         }
         
-        await _sqlRep.UpdateJogoAsync(id, data, estadioId);
+        var sql = $"EXEC sp_AtualizarJogo {id}, '{data}', {estadioId}";
+            
+        await _sqlRep.PatchQueryAsync(sql);
         return new Result(true, "Jogo atualizado com sucesso");
     }
 
-    public async Task<Result> AtualizarPartidaAsync(int id, int timeId, int jogoId, int estadioId)
+    public async Task<Result> AtualizarPartidaAsync(int id, int? timeId, int? jogoId, int? estadioId)
     {
-        var partida = (await GetPartidaByIdAsync(id)).Item2;
-        if (partida != null && !partida.Any())
+        if (!(await GetPartidaByIdAsync(null, id)).Any())
         {
             return new Result(false, "Partida não existe");
         }
         
-        var time = (await GetTimeByIdAsync(timeId)).Item2;
-        if (time != null && !time.Any())
+        if (timeId != null && jogoId != null && estadioId != null)
         {
-            return new Result(false, "TimeId não existe, insira um time válido");
-        }
+            if (!(await GetTimeByIdAsync(null, timeId)).Any())
+            {
+                return new Result(false, "Time não existe, insira um id de time válido");
+            }
         
-        var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
-        if (jogo != null && !jogo.Any())
-        {
-            return new Result(false, "JogoId não existe, insira um jogo válido");
-        }
+            if (!(await GetJogoByIdAsync(null, jogoId)).Any())
+            {
+                return new Result(false, "Jogo não existe, insira um id de jogo válido");
+            }
         
-        var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
-        if (estadio != null && !estadio.Any())
-        {
-            return new Result(false, "EstadioId não existe, insira um id de estadio válido");
-        }
+            if (!(await GetEstadiosByIdAsync(null, estadioId)).Any())
+            {
+                return new Result(false, "EstadioId não existe, insira um id de estadio válido");
+            }
+        
+            var sql = $"EXEC sp_AtualizarPartida {id}, {timeId}, {jogoId}, {estadioId}";
             
-        await _sqlRep.UpdatePartidaAsync(id, timeId, jogoId, estadioId);
-        return new Result(true, "Partida atualizada com sucesso");
+            await _sqlRep.PatchQueryAsync(sql);
+            return new Result(true, "Partida atualizada com sucesso");
+        }
+
+        return new Result(false, "timeId, jogoId ou estadioId não podem ser nulos");
     }
      
     public async Task DeletarJogadorAsync(int id)
     {
-        await _sqlRep.DeleteJogadorAsync(id);
+        await DeleteEntityAsync<Jogador>(id);
     }
     
     public async Task DeletarCompradorAsync(int id)
     {
-        await _sqlRep.DeleteCompradorAsync(id);
+        await DeleteEntityAsync<Comprador>(id);
     }
     
     public async Task DeletarEstadioAsync(int id)
     {
-        await _sqlRep.DeleteEstadioAsync(id);
+        await DeleteEntityAsync<Estadio>(id);
     }
     
     public async Task DeletarIngressoAsync(int id)
     {
-        await _sqlRep.DeleteIngressoAsync(id);
+        await DeleteEntityAsync<Ingresso>(id);
     }
     
     public async Task DeletarPartidaAsync(int id)
     {
-        await _sqlRep.DeletePartidaAsync(id);
+        await DeleteEntityAsync<Partida>(id);
     }
     
     public async Task DeletarTimeAsync(int id)
     {
-        await _sqlRep.DeleteTimeAsync(id);
+        await DeleteEntityAsync<Time>(id);
     }
     
     public async Task DeletarJogoAsync(int id)
     {
-        await _sqlRep.DeleteJogoAsync(id);
+        await DeleteEntityAsync<Jogo>(id);
     }
     
     public async Task DeletarVendaAsync(int id)
     {
-        await _sqlRep.DeleteVendaAsync(id);
+        await DeleteEntityAsync<Venda>(id);
     }
     
     public async Task<IEnumerable<T>> GetEntityByIdAsync<T>(int? id) where T : class

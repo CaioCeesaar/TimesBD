@@ -6,9 +6,7 @@ namespace TimesBD.Controllers
 {
     public class TimeDbControllerBase : ControllerBase
     {
-        protected BusinessClass _businessClass;
-        
-        protected IActionResult ConvertResultToHttpResult(Result result)
+        public IActionResult ConvertResultToHttpResult(Result result)
         {
             if (result.Sucess)
             {

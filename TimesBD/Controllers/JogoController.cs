@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TimesBD.Business;
 using TimesBD.Entities;
 
@@ -7,8 +6,10 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class JogoController : TimeDbControllerBase
+public class JogoController : ControllerBase
 {
+    private readonly BusinessClass _businessClass;
+
     public JogoController(IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
@@ -17,33 +18,33 @@ public class JogoController : TimeDbControllerBase
     
     [HttpGet]
     public async Task<IActionResult> GetJogosById(
-        [FromQuery(Name = "id")] int id
+        [FromQuery(Name = "id")] int? id = null
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getJogo) = await _businessClass.GetJogoByIdAsync(id);
-        return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getJogo)));
+        var getJogo = await _businessClass.GetJogoByIdAsync(autentica, id);
+        return Ok(getJogo);
     }
     
     [HttpPatch]
-    public async Task<Result> Patch([FromQuery] int id, JogoPostPatch atualizaJogo,
+    public async Task<IActionResult> Patch([FromQuery] int id, JogoPostPatch atualizaJogo,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.AtualizarJogoAsync(id, atualizaJogo.Data, atualizaJogo.EstadioId);
-        return new Result(true, "Jogo atualizado com sucesso!");
+        return Ok();
     }
     
     [HttpPost]
-    public async Task<Result> Post(JogoPostPatch jogo, [FromHeader(Name = "Autentica")] string? autentica = null)
+    public async Task<IActionResult> Post(JogoPostPatch jogo, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.InserirJogoAsync(jogo.Data, jogo.EstadioId);
-        return new Result(true, "Jogo inserido com sucesso!");
+        var result = await _businessClass.InserirJogoAsync(jogo.Data, jogo.EstadioId);
+        return Ok(result);
     }
     
     [HttpDelete]
-    public async Task<Result> Delete([FromQuery] int id,
+    public async Task<IActionResult> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _businessClass.DeletarJogoAsync(id);
-        return new Result(true, "Jogo deletado com sucesso!");
+        return Ok();
     }
 }
