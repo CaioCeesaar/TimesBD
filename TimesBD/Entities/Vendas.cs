@@ -1,14 +1,14 @@
 ﻿namespace TimesBD.Entities;
 
-public class Venda
+public class Vendas
 {
-    protected Venda() { }
+    protected Vendas() { }
 
-    public Venda(DateTime dataVenda, int compradorId, int ingressoId)
+    public Vendas(DateTime dataVenda, int compradorId, int ingressoID)
     {
         DataVenda = dataVenda;
         CompradorId = compradorId;
-        IngressoID = ingressoId;
+        IngressoID = ingressoID;
     }
 
     public int Id { get; set; }
@@ -22,5 +22,5 @@ public class VendasPostPatch
 {
     public DateTime DataVenda { get; set; }
     public int CompradorId { get; set; }
-    public int IngressoId { get; set; }
+    public int IngressoID { get; set; }
 }
