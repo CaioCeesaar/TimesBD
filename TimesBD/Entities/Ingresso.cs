@@ -4,22 +4,22 @@ public class Ingresso
 {
     protected Ingresso() { }
 
-    public Ingresso(double valor, int jogoId)
+    public Ingresso(double valor, int partidaId)
     {
         Valor = valor;
-        JogoId = jogoId;
+        PartidaId = partidaId;
     }
 
     public int Id { get; set; }
        
     public double Valor { get; set; }
 
-    public int JogoId { get; set; }
+    public int PartidaId { get; set; }
 
 }
 
 public class IngressoPost
 {
     public double Valor { get; set; }
-    public int JogoId { get; set; }
+    public int PartidaId { get; set; }
 }

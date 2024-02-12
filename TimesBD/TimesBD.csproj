@@ -3,7 +3,6 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-		<IncludeOpenApiAnalyzers>true</IncludeOpenApiAnalyzers>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.0.151" />
@@ -16,6 +15,10 @@
     <ItemGroup>
       <Compile Remove="Controllers\WeatherForecastController.cs" />
       <Compile Remove="WeatherForecast.cs" />
+      <Compile Remove="Controllers\EstadioController.cs" />
+      <Compile Remove="Controllers\TimeController.cs" />
+      <Compile Remove="Models\JogadorModel.cs" />
+      <Compile Remove="Models\TimeModel.cs" />
       <Compile Remove="Models\**" />
     </ItemGroup>
     <ItemGroup>
