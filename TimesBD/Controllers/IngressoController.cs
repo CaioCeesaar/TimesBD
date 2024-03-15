@@ -2,25 +2,33 @@
 using Microsoft.AspNetCore.Mvc;
 using TimesBD.Business;
 using TimesBD.Entities;
+using TimesBD.Framework;
 
 namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class IngressoController : TimeDbControllerBase 
+public class IngressoController : TimeDbControllerBase2
 {
-    public IngressoController(IConfiguration configuration)
+    public IngressoController(IConfiguration configuration, TimesBackgroundService backgroundService) : base(backgroundService)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")!;
-        _businessClass = new(connectionString);
+        _ = configuration.GetConnectionString("DefaultConnection");
     }
     
     [HttpGet]
+    public async Task<IActionResult> GetIngressos(
+        [FromHeader(Name = "Autentica")] string? autentica = null)
+    {
+        var (getResult, getIngressos) = await _backgroundService.GetIngressos();
+        return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getIngressos)));
+    }
+    
+    [HttpGet("busca-por-id")]
     public async Task<IActionResult> GetIngressosById(
         [FromQuery(Name = "id")] int id
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getIngresso) = await _businessClass.GetIngressoByIdAsync(id);
+        var (getResult, getIngresso) = await _backgroundService.GetIngressosById(id);
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getIngresso)));
     }
     
@@ -28,14 +36,14 @@ public class IngressoController : TimeDbControllerBase
     public async Task<Result> Patch([FromQuery] int id, IngressoPost atualizaIngresso,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.AtualizarIngressoAsync(id, atualizaIngresso.Valor, atualizaIngresso.JogoId);
+        await _backgroundService.AtualizarIngressoAsync(id, atualizaIngresso.Valor, atualizaIngresso.JogoId);
         return new Result(true, "Ingresso atualizado com sucesso!");
     }
     
     [HttpPost]
     public async Task<Result> Post(IngressoPost ingresso, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.InserirIngressoAsync(ingresso.Valor, ingresso.JogoId);
+        await _backgroundService.InserirIngressoAsync(ingresso.Valor, ingresso.JogoId);
         return new Result(true, "Ingresso inserido com sucesso!");
     }
     
@@ -43,7 +51,7 @@ public class IngressoController : TimeDbControllerBase
     public async Task<Result> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.DeletarIngressoAsync(id);
+        await _backgroundService.DeletarIngressoAsync(id);
         return new Result(true, "Ingresso deletado com sucesso!");
     }
 }

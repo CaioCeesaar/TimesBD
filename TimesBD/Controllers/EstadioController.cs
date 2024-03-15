@@ -2,25 +2,33 @@
 using Microsoft.AspNetCore.Mvc;
 using TimesBD.Business;
 using TimesBD.Entities;
+using TimesBD.Framework;
 
 namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EstadioController : TimeDbControllerBase
+public class EstadioController : TimeDbControllerBase2
 {
-    public EstadioController(IConfiguration configuration)
+    public EstadioController(IConfiguration configuration, TimesBackgroundService backgroundService) : base(backgroundService)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")!;
-        _businessClass = new(connectionString);
+        _ = configuration.GetConnectionString("DefaultConnection");
     }
     
     [HttpGet]
+    public async Task<IActionResult> GetEstadios(
+        [FromHeader(Name = "Autentica")] string? autentica = null)
+    {
+        var (getResult, getEstadios) = await _backgroundService.GetEstadios();
+        return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getEstadios)));
+    }
+    
+    [HttpGet("busca-por-id")]
     public async Task<IActionResult> GetEstadiosById(
         [FromQuery(Name = "id")] int id
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getEstadio) = await _businessClass.GetEstadiosByIdAsync(id);
+        var (getResult, getEstadio) = await _backgroundService.GetEstadiosById(id, autentica);
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getEstadio)));
     }
     
@@ -28,14 +36,14 @@ public class EstadioController : TimeDbControllerBase
     public async Task<Result> Patch([FromQuery] int id, EstadiosModel atualizaEstadio,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.AtualizarEstadioAsync(id, atualizaEstadio.Nome, atualizaEstadio.Limite, atualizaEstadio.Cep);
+        await _backgroundService.AtualizarEstadioAsync(id, atualizaEstadio.Nome, atualizaEstadio.Limite, atualizaEstadio.Cep);
         return new Result(true, "Estadio atualizado com sucesso!");
     }
     
     [HttpPost]
     public async Task<Result> Post(EstadiosModel estadio, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.InserirEstadioAsync(estadio.Nome, estadio.Limite, estadio.Cep);
+        await _backgroundService.InserirEstadioAsync(estadio.Nome, estadio.Limite, estadio.Cep);
         return new Result(true, "Estadio inserido com sucesso!");
     }
     
@@ -43,7 +51,7 @@ public class EstadioController : TimeDbControllerBase
     public async Task<Result> Delete([FromQuery] int id,
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        await _businessClass.DeletarEstadioAsync(id);
+        await _backgroundService.DeletarEstadioAsync(id);
         return new Result(true, "Estadio deletado com sucesso!");
     }
 }

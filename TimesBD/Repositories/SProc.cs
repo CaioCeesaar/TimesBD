@@ -2,6 +2,15 @@
 {
     public static class SProc
     {
+        public const string GetJogadores = "sp_GetAllJogadores";
+        public const string GetCompradores = "sp_GetAllCompradores";
+        public const string GetEstadios = "sp_GetAllEstadios";
+        public const string GetIngressos = "sp_GetAllIngressos";
+        public const string GetJogos = "sp_GetAllJogos";
+        public const string GetPartidas = "sp_GetAllPartidas";
+        public const string GetTimes = "sp_GetAllTimes";
+        public const string GetVendas = "sp_GetAllVendas";
+        
         public const string GetJogador = "sp_GetJogador";
         public const string GetComprador = "sp_GetComprador";
         public const string GetIngresso = "sp_GetIngresso";

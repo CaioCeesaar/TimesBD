@@ -13,6 +13,118 @@ public class SqlRep
         _connection = new SqlConnection(connectionString);
         Reconnect();
     }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetEstadiosAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var estadios = await _connection.QueryAsync<T>(SProc.GetEstadios, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), estadios);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetJogadoresAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var jogadores = await _connection.QueryAsync<T>(SProc.GetJogadores, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), jogadores);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetCompradoresAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var compradores = await _connection.QueryAsync<T>(SProc.GetCompradores, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), compradores);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetIngressosAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var ingressos = await _connection.QueryAsync<T>(SProc.GetIngressos, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), ingressos);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetJogosAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var jogos = await _connection.QueryAsync<T>(SProc.GetJogos, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), jogos);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetPartidasAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var partidas = await _connection.QueryAsync<T>(SProc.GetPartidas, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), partidas);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetTimesAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var times = await _connection.QueryAsync<T>(SProc.GetTimes, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), times);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
+    
+    public async Task<(Result, IEnumerable<T>?)> GetVendasAsync<T>() where T : class
+    {
+        try
+        {
+            Reconnect();
+            var vendas = await _connection.QueryAsync<T>(SProc.GetVendas, commandType: CommandType.StoredProcedure);
+            return (new Result(true, "Ok"), vendas);
+        }
+        catch (Exception)
+        {
+            return (new Result(false, "Deu ruim"), null);
+        }
+    }
 
     public async Task<(Result, IEnumerable<T>?)> GetJogadorAsync<T>(int id) where T : class
     {

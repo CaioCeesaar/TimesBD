@@ -17,6 +17,46 @@ public class BusinessClass
         _apiRep = new();
     }
 
+    public async Task<(Result, IEnumerable<Jogador>?)> GetJogadoresAsync()
+    {
+        return await _sqlRep.GetJogadoresAsync<Jogador>();
+    }
+    
+    public async Task<(Result, IEnumerable<Comprador>?)> GetCompradoresAsync()
+    {
+        return await _sqlRep.GetCompradoresAsync<Comprador>();
+    }
+    
+    public async Task<(Result, IEnumerable<Estadio>?)> GetEstadiosAsync()
+    {
+        return await _sqlRep.GetEstadiosAsync<Estadio>();
+    }
+    
+    public async Task<(Result, IEnumerable<Ingresso>?)> GetIngressosAsync()
+    {
+        return await _sqlRep.GetIngressosAsync<Ingresso>();
+    }
+    
+    public async Task<(Result, IEnumerable<Partida>?)> GetPartidasAsync()
+    {
+        return await _sqlRep.GetPartidasAsync<Partida>();
+    }
+    
+    public async Task<(Result, IEnumerable<Time>?)> GetTimesAsync()
+    {
+        return await _sqlRep.GetTimesAsync<Time>();
+    }
+    
+    public async Task<(Result, IEnumerable<Jogo>?)> GetJogosAsync()
+    {
+        return await _sqlRep.GetJogosAsync<Jogo>();
+    }
+    
+    public async Task<(Result, IEnumerable<Venda>?)> GetVendasAsync()
+    {
+        return await _sqlRep.GetVendasAsync<Venda>();
+    }
+    
     public async Task<(Result, IEnumerable<Jogador>?)> GetJogadorByIdAsync(int id)
     {
         return await _sqlRep.GetJogadorAsync<Jogador>(id);
