@@ -16,18 +16,20 @@ public class CompradorController : TimeDbControllerBase2
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetCompradores(
+    public async Task<IActionResult> Compradores(
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getCompradores) = await _backgroundService.GetCompradores();
+        var (getResult, getCompradores) = await _backgroundService.Compradores();
+        await _backgroundService.InserirLogAsync("GetCompradores", "Busca de todos os compradores", "");
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getCompradores)));
     }
     
     [HttpGet("busca-por-id")]
-    public async Task<IActionResult> GetCompradoresById(
+    public async Task<IActionResult> CompradoresById(
         [FromQuery(Name = "id")] int id, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getComprador) = await _backgroundService.GetCompradorById(id);
+        var (getResult, getComprador) = await _backgroundService.CompradorById(id);
+        await _backgroundService.InserirLogAsync("GetCompradoresById", "Busca de comprador por Id", $"ID: {id}");
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getComprador)));
     }
     
@@ -36,6 +38,9 @@ public class CompradorController : TimeDbControllerBase2
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.AtualizarCompradorAsync(id, atualizaComprador.Nome, atualizaComprador.Cpf);
+        await _backgroundService.InserirLogAsync("AtualizarComprador",
+            $"Comprador({id})",
+            $"Nome: {atualizaComprador.Nome}, \nCPF: {atualizaComprador.Cpf}");
         return new Result(true, "Comprador atualizado com sucesso!");
     }
     
@@ -43,6 +48,9 @@ public class CompradorController : TimeDbControllerBase2
     public async Task<Result> Post(CompradorPostPatch comprador, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.InserirCompradorAsync(comprador.Nome, comprador.Cpf);
+        await _backgroundService.InserirLogAsync("InserirComprador",
+            $"Comprador {comprador.Nome} inserido com sucesso!",
+            $"Nome: {comprador.Nome}, \nCPF: {comprador.Cpf}");
         return new Result(true, "Comprador inserido com sucesso!");
     }
     
@@ -51,6 +59,7 @@ public class CompradorController : TimeDbControllerBase2
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.DeletarCompradorAsync(id);
+        await _backgroundService.InserirLogAsync("DeletarComprador", "Comprador deletado com sucesso!", $"ID: {id}");
         return new Result(true, "Comprador deletado com sucesso!");
     }
     
