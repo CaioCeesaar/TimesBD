@@ -1,6 +1,5 @@
 ﻿using TimesBD.Business;
 using TimesBD.Entities;
-using TimesBD.Repositories;
 
 namespace TimesBD.Framework
 {
@@ -8,10 +7,10 @@ namespace TimesBD.Framework
     {
         private BusinessClass _businessClass;
 
-        public TimesBackgroundService(IConfiguration configuration, ILogRepository logRepository)
+        public TimesBackgroundService(IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection")!;
-            _businessClass = new BusinessClass(connectionString, logRepository);
+            _businessClass = new BusinessClass(connectionString);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,79 +26,49 @@ namespace TimesBD.Framework
             }
         }
 
-        public async Task<(Result, IEnumerable<Jogador>?)> Jogadores(string? autentica = null)
+        public async Task<(Result, IEnumerable<Jogador>?)> GetJogadores(string? autentica = null)
         {
-            return await _businessClass.JogadoresAsync();
+            return await _businessClass.GetJogadoresAsync();
         }
         
-        public async Task<(Result, IEnumerable<Time>?)> Times(string? autentica = null)
+        public async Task<(Result, IEnumerable<Time>?)> GetTimes(string? autentica = null)
         {
-            return await _businessClass.TimesAsync();
+            return await _businessClass.GetTimesAsync();
         }
         
-        public async Task<(Result, IEnumerable<Estadio>?)> Estadios(string? autentica = null)
+        public async Task<(Result, IEnumerable<Estadio>?)> GetEstadios(string? autentica = null)
         {
-            return await _businessClass.EstadiosAsync();
+            return await _businessClass.GetEstadiosAsync();
         }
         
-        public async Task<(Result, IEnumerable<Jogo>?)> Jogos(string? autentica = null)
+        public async Task<(Result, IEnumerable<Jogo>?)> GetJogos(string? autentica = null)
         {
-            return await _businessClass.JogosAsync();
+            return await _businessClass.GetJogosAsync();
         }
         
-        public async Task<(Result, IEnumerable<Ingresso>?)> Ingressos(string? autentica = null)
+        public async Task<(Result, IEnumerable<Ingresso>?)> GetIngressos(string? autentica = null)
         {
-            return await _businessClass.IngressosAsync();
+            return await _businessClass.GetIngressosAsync();
         }
         
-        public async Task<(Result, IEnumerable<Partida>?)> Partidas(string? autentica = null)
+        public async Task<(Result, IEnumerable<Partida>?)> GetPartidas(string? autentica = null)
         {
-            return await _businessClass.PartidasAsync();
+            return await _businessClass.GetPartidasAsync();
         }
         
-        public async Task<(Result, IEnumerable<Comprador>?)> Compradores(string? autentica = null)
+        public async Task<(Result, IEnumerable<Comprador>?)> GetCompradores(string? autentica = null)
         {
-            return await _businessClass.CompradoresAsync();
+            return await _businessClass.GetCompradoresAsync();
         }
         
-        public async Task<(Result, IEnumerable<Venda>?)> Vendas(string? autentica = null)
+        public async Task<(Result, IEnumerable<Venda>?)> GetVendas(string? autentica = null)
         {
-            return await _businessClass.VendasAsync();
+            return await _businessClass.GetVendasAsync();
         }
         
-        public async Task<(Result, IEnumerable<Estadio>?)> EstadiosById(int id, string? autentica = null)
+        public async Task<(Result, IEnumerable<Estadio>?)> GetEstadiosById(int id, string? autentica = null)
         {
-            return await _businessClass.EstadiosByIdAsync(id);
-        }
-        
-        public async Task<(Result, IEnumerable<Ingresso>?)> IngressosById(int id, string? autentica = null)
-        {
-            return await _businessClass.IngressoByIdAsync(id);
-        }
-        
-        public async Task<(Result, IEnumerable<Partida>?)> PartidasById(int id, string? autentica = null)
-        {
-            return await _businessClass.PartidaByIdAsync(id);
-        }
-        
-        public async Task<(Result, IEnumerable<Time>?)> TimesById(int id, string? autentica = null)
-        {
-            return await _businessClass.TimeByIdAsync(id);
-        }
-
-        public async Task<(Result, IEnumerable<Jogador>?)> JogadorById(int id, string? autentica = null)
-        {
-            return await _businessClass.JogadorByIdAsync(id);
-        }
-         
-        public async Task<(Result, IEnumerable<Comprador>?)> CompradorById(int id, string? autentica = null)
-        {
-            return await _businessClass.CompradorByIdAsync(id);
-        }
-        
-        public async Task<(Result, IEnumerable<Venda>?)> VendasById(int id, string? autentica = null)
-        {
-            return await _businessClass.VendaByIdAsync(id);
+            return await _businessClass.GetEstadiosByIdAsync(id);
         }
 
         public async Task<Result> AtualizarEstadioAsync(int id, string nome, int limite, string cep, string? autentica = null)
@@ -135,11 +104,6 @@ namespace TimesBD.Framework
         public async Task<Result> AtualizarCompradorAsync(int id, string nome, string cpf, string? autentica = null)
         {
             return await _businessClass.AtualizarCompradorAsync(id, nome, cpf);
-        }
-
-        public async Task<Result> InserirLogAsync(string action, string message, string details, string? autentica = null)
-        {
-            return await _businessClass.AddLogAsync(action, message, details);
         }
 
         public async Task<Result> InserirEstadioAsync(string nome, int limite, string cep, string? autentica = null)
@@ -182,9 +146,9 @@ namespace TimesBD.Framework
             return await _businessClass.InserirIngressoAsync(valor, jogoId);
         }
         
-        public async Task<(Result, IEnumerable<Jogo>?)> JogosById(int id, string? autentica = null)
+        public async Task<(Result, IEnumerable<Jogo>?)> GetJogosById(int id, string? autentica = null)
         {
-            return await _businessClass.JogoByIdAsync(id);
+            return await _businessClass.GetJogoByIdAsync(id);
         }
 
         public async Task DeletarEstadioAsync(int id, string? autentica = null)
@@ -226,5 +190,36 @@ namespace TimesBD.Framework
         {
             await _businessClass.DeletarCompradorAsync(id);
         }
+        
+        public async Task<(Result, IEnumerable<Ingresso>?)> GetIngressosById(int id, string? autentica = null)
+        {
+            return await _businessClass.GetIngressoByIdAsync(id);
+        }
+        
+        public async Task<(Result, IEnumerable<Partida>?)> GetPartidasById(int id, string? autentica = null)
+        {
+            return await _businessClass.GetPartidaByIdAsync(id);
+        }
+        
+        public async Task<(Result, IEnumerable<Time>?)> GetTimesById(int id, string? autentica = null)
+        {
+            return await _businessClass.GetTimeByIdAsync(id);
+        }
+
+        public async Task<(Result, IEnumerable<Jogador>?)> GetJogadorById(int id, string? autentica = null)
+        {
+            return await _businessClass.GetJogadorByIdAsync(id);
+        }
+         
+        public async Task<(Result, IEnumerable<Comprador>?)> GetCompradorById(int id, string? autentica = null)
+        {
+            return await _businessClass.GetCompradorByIdAsync(id);
+        }
+        
+        public async Task<(Result, IEnumerable<Venda>?)> GetVendasById(int id, string? autentica = null)
+        {
+            return await _businessClass.GetVendaByIdAsync(id);
+        }
+        
     }
 }

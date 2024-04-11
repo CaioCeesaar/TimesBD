@@ -16,21 +16,19 @@ public class IngressoController : TimeDbControllerBase2
     }
     
     [HttpGet]
-    public async Task<IActionResult> Ingressos(
+    public async Task<IActionResult> GetIngressos(
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getIngressos) = await _backgroundService.Ingressos();
-        await _backgroundService.InserirLogAsync("GetIngressos", "Busca de todos os ingressos", "");
+        var (getResult, getIngressos) = await _backgroundService.GetIngressos();
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getIngressos)));
     }
     
     [HttpGet("busca-por-id")]
-    public async Task<IActionResult> IngressosById(
+    public async Task<IActionResult> GetIngressosById(
         [FromQuery(Name = "id")] int id
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getIngresso) = await _backgroundService.IngressosById(id);
-        await _backgroundService.InserirLogAsync("GetIngressosById", "Busca de ingresso por Id", $"ID: {id}");
+        var (getResult, getIngresso) = await _backgroundService.GetIngressosById(id);
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getIngresso)));
     }
     
@@ -39,9 +37,6 @@ public class IngressoController : TimeDbControllerBase2
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.AtualizarIngressoAsync(id, atualizaIngresso.Valor, atualizaIngresso.JogoId);
-        await _backgroundService.InserirLogAsync("AtualizarIngresso",
-            $"Ingresso({id})",
-            $"Valor: {atualizaIngresso.Valor}, \nJogoId: {atualizaIngresso.JogoId}");
         return new Result(true, "Ingresso atualizado com sucesso!");
     }
     
@@ -49,9 +44,6 @@ public class IngressoController : TimeDbControllerBase2
     public async Task<Result> Post(IngressoPost ingresso, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.InserirIngressoAsync(ingresso.Valor, ingresso.JogoId);
-        await _backgroundService.InserirLogAsync("InserirIngresso",
-            $"Ingresso {ingresso.Valor} inserido com sucesso!",
-            $"Valor: {ingresso.Valor}, \nJogoId: {ingresso.JogoId}");
         return new Result(true, "Ingresso inserido com sucesso!");
     }
     
@@ -60,7 +52,6 @@ public class IngressoController : TimeDbControllerBase2
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.DeletarIngressoAsync(id);
-        await _backgroundService.InserirLogAsync("DeletarIngresso", "Ingresso deletado com sucesso!", $"ID: {id}");
         return new Result(true, "Ingresso deletado com sucesso!");
     }
 }

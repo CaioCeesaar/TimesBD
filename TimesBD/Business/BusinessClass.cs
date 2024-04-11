@@ -11,93 +11,90 @@ public class BusinessClass
 
     private readonly ApiRep _apiRep;
 
-    private readonly ILogRepository _logRepository;
-
-    public BusinessClass(string connectionString, ILogRepository logRepository)
+    public BusinessClass(string connectionString)
     {
         _sqlRep = new(connectionString);
         _apiRep = new();
-        _logRepository = logRepository;
     }
 
-    public async Task<(Result, IEnumerable<Jogador>?)> JogadoresAsync()
+    public async Task<(Result, IEnumerable<Jogador>?)> GetJogadoresAsync()
     {
-        return await _sqlRep.JogadoresAsync<Jogador>();
+        return await _sqlRep.GetJogadoresAsync<Jogador>();
     }
     
-    public async Task<(Result, IEnumerable<Comprador>?)> CompradoresAsync()
+    public async Task<(Result, IEnumerable<Comprador>?)> GetCompradoresAsync()
     {
-        return await _sqlRep.CompradoresAsync<Comprador>();
+        return await _sqlRep.GetCompradoresAsync<Comprador>();
     }
     
-    public async Task<(Result, IEnumerable<Estadio>?)> EstadiosAsync()
+    public async Task<(Result, IEnumerable<Estadio>?)> GetEstadiosAsync()
     {
-        return await _sqlRep.EstadiosAsync<Estadio>();
+        return await _sqlRep.GetEstadiosAsync<Estadio>();
     }
     
-    public async Task<(Result, IEnumerable<Ingresso>?)> IngressosAsync()
+    public async Task<(Result, IEnumerable<Ingresso>?)> GetIngressosAsync()
     {
-        return await _sqlRep.IngressosAsync<Ingresso>();
+        return await _sqlRep.GetIngressosAsync<Ingresso>();
     }
     
-    public async Task<(Result, IEnumerable<Partida>?)> PartidasAsync()
+    public async Task<(Result, IEnumerable<Partida>?)> GetPartidasAsync()
     {
-        return await _sqlRep.PartidasAsync<Partida>();
+        return await _sqlRep.GetPartidasAsync<Partida>();
     }
     
-    public async Task<(Result, IEnumerable<Time>?)> TimesAsync()
+    public async Task<(Result, IEnumerable<Time>?)> GetTimesAsync()
     {
-        return await _sqlRep.TimesAsync<Time>();
+        return await _sqlRep.GetTimesAsync<Time>();
     }
     
-    public async Task<(Result, IEnumerable<Jogo>?)> JogosAsync()
+    public async Task<(Result, IEnumerable<Jogo>?)> GetJogosAsync()
     {
-        return await _sqlRep.JogosAsync<Jogo>();
+        return await _sqlRep.GetJogosAsync<Jogo>();
     }
     
-    public async Task<(Result, IEnumerable<Venda>?)> VendasAsync()
+    public async Task<(Result, IEnumerable<Venda>?)> GetVendasAsync()
     {
-        return await _sqlRep.VendasAsync<Venda>();
+        return await _sqlRep.GetVendasAsync<Venda>();
     }
     
-    public async Task<(Result, IEnumerable<Jogador>?)> JogadorByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Jogador>?)> GetJogadorByIdAsync(int id)
     {
-        return await _sqlRep.JogadorAsync<Jogador>(id);
+        return await _sqlRep.GetJogadorAsync<Jogador>(id);
     }
     
-    public async Task<(Result, IEnumerable<Comprador>?)> CompradorByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Comprador>?)> GetCompradorByIdAsync(int id)
     {
-        return await _sqlRep.CompradorAsync<Comprador>(id);
+        return await _sqlRep.GetCompradorAsync<Comprador>(id);
     }
     
-    public async Task<(Result, IEnumerable<Estadio>?)> EstadiosByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Estadio>?)> GetEstadiosByIdAsync(int id)
     {
-        return await _sqlRep.EstadioAsync<Estadio>(id);
+        return await _sqlRep.GetEstadioAsync<Estadio>(id);
     }
     
-    public async Task<(Result, IEnumerable<Ingresso>?)> IngressoByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Ingresso>?)> GetIngressoByIdAsync(int id)
     {
-        return await _sqlRep.IngressoAsync<Ingresso>(id);
+        return await _sqlRep.GetIngressoAsync<Ingresso>(id);
     }
     
-    public async Task<(Result, IEnumerable<Partida>?)> PartidaByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Partida>?)> GetPartidaByIdAsync(int id)
     {
-        return await _sqlRep.PartidaAsync<Partida>(id);
+        return await _sqlRep.GetPartidaAsync<Partida>(id);
     }
     
-    public async Task<(Result, IEnumerable<Time>?)> TimeByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Time>?)> GetTimeByIdAsync(int id)
     {
-        return await _sqlRep.TimeAsync<Time>(id);
+        return await _sqlRep.GetTimeAsync<Time>(id);
     }
     
-    public async Task<(Result, IEnumerable<Jogo>?)> JogoByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Jogo>?)> GetJogoByIdAsync(int id)
     {
-        return await _sqlRep.JogoAsync<Jogo>(id);
+        return await _sqlRep.GetJogoAsync<Jogo>(id);
     }
     
-    public async Task<(Result, IEnumerable<Venda>?)> VendaByIdAsync(int id)
+    public async Task<(Result, IEnumerable<Venda>?)> GetVendaByIdAsync(int id)
     {
-        return await _sqlRep.VendaAsync<Venda>(id);
+        return await _sqlRep.GetVendaAsync<Venda>(id);
     }
         
     public async Task<Result> InserirJogadorAsync(string? nome, DateTime? dataNascimento, int timeId, string cep)
@@ -124,7 +121,7 @@ public class BusinessClass
             return new Result(false, "TimeId não pode ser menor ou igual a 0");
         }
         
-        var time = (await TimeByIdAsync(timeId)).Item2;
+        var time = (await GetTimeByIdAsync(timeId)).Item2;
         if (time != null && !time.Any())
         {
             return new Result(false, "TimeId não existe, insira um time válido");
@@ -186,7 +183,7 @@ public class BusinessClass
             return new Result(false, "Valor não pode ser menor ou igual a 0");
         }
 
-        var jogo = (await JogoByIdAsync(jogoId)).Item2;
+        var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
         if (jogo != null && !jogo.Any())
         {
             return new Result(false, "JogoId não existe, insira um jogo válido");
@@ -195,26 +192,21 @@ public class BusinessClass
         return await _sqlRep.CreateIngressoAsync(valor, jogoId);
     }
 
-    public async Task<Result> AddLogAsync(string action, string message, string details)
-    {
-        return await _logRepository.AddLogAsync(action, message, details);
-    }
-
     public async Task<Result> InserirPartidaAsync(int timeId, int jogoId, int estadioId)
     {
-            var time = (await TimeByIdAsync(timeId)).Item2;
+            var time = (await GetTimeByIdAsync(timeId)).Item2;
             if (time != null && !time.Any())
             {
                 return new Result(false, "TimeId não existe, insira um time válido");
             }
         
-            var jogo = (await JogoByIdAsync(jogoId)).Item2;
+            var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
             if (jogo != null && !jogo.Any())
             {
                 return new Result(false, "JogoId não existe, insira um jogo válido");
             }
         
-            var estadio = (await EstadiosByIdAsync(estadioId)).Item2;
+            var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
             if (estadio != null && !estadio.Any())
             {
                 return new Result(false, "EstadioId não existe, insira um id de estadio válido");
@@ -247,7 +239,7 @@ public class BusinessClass
             return new Result(false, "Data não pode ser nula");
         }
         
-        var estadio = (await EstadiosByIdAsync(estadioId)).Item2;
+        var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
         if (estadio != null && !estadio.Any())
         {
             return new Result(false, "EstadioId não existe, insira um id de estadio válido");
@@ -260,13 +252,13 @@ public class BusinessClass
     {
         if (dataVenda != null)
         {
-            var compradors = (await CompradorByIdAsync(compradorId)).Item2;
+            var compradors = (await GetCompradorByIdAsync(compradorId)).Item2;
             if (compradors != null && !compradors.Any())
             {
                 return new Result(false, "CompradorId não existe, insira um comprador válido");
             }
 
-            var ingresso = (await IngressoByIdAsync(ingressoId)).Item2;
+            var ingresso = (await GetIngressoByIdAsync(ingressoId)).Item2;
             if (ingresso != null && !ingresso.Any())
             {
                 return new Result(false, "IngressoId não existe, insira um ingresso válido");
@@ -280,7 +272,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarJogadorAsync(int id, string? nome, DateTime? dataNascimento, int timeId, string cep)
     {
-        var jogador = (await JogadorByIdAsync(id)).Item2;
+        var jogador = (await GetJogadorByIdAsync(id)).Item2;
         if (jogador != null && !jogador.Any())
         {
             return new Result(false, "Jogador não existe");
@@ -308,7 +300,7 @@ public class BusinessClass
             return new Result(false, "TimeId não pode ser menor ou igual a 0");
         }
         
-        var time = (await TimeByIdAsync(timeId)).Item2;
+        var time = (await GetTimeByIdAsync(timeId)).Item2;
         if (time != null && !time.Any())
         {
             return new Result(false, "TimeId não existe, insira um time válido");
@@ -325,7 +317,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarCompradorAsync(int id, string? nome, string? cpf)
     {
-        var comprador = (await CompradorByIdAsync(id)).Item2;
+        var comprador = (await GetCompradorByIdAsync(id)).Item2;
         if (comprador != null && !comprador.Any())
         {
             return new Result(false, "Comprador não existe");
@@ -352,7 +344,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarEstadioAsync(int id, string? nome, int limite, string cep)
     {
-        var estadio = (await EstadiosByIdAsync(id)).Item2;
+        var estadio = (await GetEstadiosByIdAsync(id)).Item2;
         if (estadio != null && !estadio.Any())
         {
             return new Result(false, "EstadioId não existe, insira um id de estadio válido");
@@ -379,7 +371,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarTimeAsync(int id, string? nome, string cep)
     {
-        var time = (await TimeByIdAsync(id)).Item2;
+        var time = (await GetTimeByIdAsync(id)).Item2;
         if (time != null && !time.Any())
         {
             return new Result(false, "TimeId não existe, insira um time válido");
@@ -402,7 +394,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarIngressoAsync(int id, double valor, int jogoId)
     {
-        var ingresso = (await IngressoByIdAsync(id)).Item2;
+        var ingresso = (await GetIngressoByIdAsync(id)).Item2;
         if (ingresso != null && !ingresso.Any())
         {
             return new Result(false, "Ingresso não existe");
@@ -413,7 +405,7 @@ public class BusinessClass
             return new Result(false, "Valor não pode ser menor ou igual a 0");
         }
         
-        var jogo = (await JogoByIdAsync(jogoId)).Item2;
+        var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
         if (jogo != null && !jogo.Any())
         {
             return new Result(false, "JogoId não existe, insira um jogo válido");
@@ -427,7 +419,7 @@ public class BusinessClass
     
     public async Task<Result> AtualizarJogoAsync(int id, DateTime? data, int estadioId)
     {
-        var jogo = (await JogoByIdAsync(id)).Item2;
+        var jogo = (await GetJogoByIdAsync(id)).Item2;
         if (jogo != null && !jogo.Any())
         {
             return new Result(false, "JogoId não existe, insira um jogo válido");
@@ -438,7 +430,7 @@ public class BusinessClass
             return new Result(false, "Data não pode ser nula");
         }
         
-        var estadio = (await EstadiosByIdAsync(estadioId)).Item2;
+        var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
         if (estadio != null && !estadio.Any())
         {
             return new Result(false, "EstadioId não existe, insira um id de estadio válido");
@@ -450,25 +442,25 @@ public class BusinessClass
 
     public async Task<Result> AtualizarPartidaAsync(int id, int timeId, int jogoId, int estadioId)
     {
-        var partida = (await PartidaByIdAsync(id)).Item2;
+        var partida = (await GetPartidaByIdAsync(id)).Item2;
         if (partida != null && !partida.Any())
         {
             return new Result(false, "Partida não existe");
         }
         
-        var time = (await TimeByIdAsync(timeId)).Item2;
+        var time = (await GetTimeByIdAsync(timeId)).Item2;
         if (time != null && !time.Any())
         {
             return new Result(false, "TimeId não existe, insira um time válido");
         }
         
-        var jogo = (await JogoByIdAsync(jogoId)).Item2;
+        var jogo = (await GetJogoByIdAsync(jogoId)).Item2;
         if (jogo != null && !jogo.Any())
         {
             return new Result(false, "JogoId não existe, insira um jogo válido");
         }
         
-        var estadio = (await EstadiosByIdAsync(estadioId)).Item2;
+        var estadio = (await GetEstadiosByIdAsync(estadioId)).Item2;
         if (estadio != null && !estadio.Any())
         {
             return new Result(false, "EstadioId não existe, insira um id de estadio válido");
@@ -518,7 +510,7 @@ public class BusinessClass
         await _sqlRep.DeleteVendaAsync(id);
     }
     
-    public async Task<IEnumerable<T>> EntityByIdAsync<T>(int? id) where T : class
+    public async Task<IEnumerable<T>> GetEntityByIdAsync<T>(int? id) where T : class
     {
         var entityType = typeof(T);
         var sql = $"SELECT * FROM {entityType.Name} ";
@@ -526,12 +518,12 @@ public class BusinessClass
         {
             sql += $"WHERE Id = {id}";
         }
-        return await _sqlRep.QueryAsync<T>(sql);
+        return await _sqlRep.GetQueryAsync<T>(sql);
     }
     
     public async Task<Result> DeleteEntityAsync<T>(int id) where T : class
     {
-        if (!(await EntityByIdAsync<T>(id)).Any())
+        if (!(await GetEntityByIdAsync<T>(id)).Any())
         {
             return new Result(false, $"{typeof(T).Name} não existe");
         }

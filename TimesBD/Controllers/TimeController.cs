@@ -16,21 +16,19 @@ public class TimeController : TimeDbControllerBase2
     }
     
     [HttpGet]
-    public async Task<IActionResult> Times(
+    public async Task<IActionResult> GetTimes(
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getTimes) = await _backgroundService.Times();
-        await _backgroundService.InserirLogAsync("GetTimes", "Busca de todos os times", "");
+        var (getResult, getTimes) = await _backgroundService.GetTimes();
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getTimes)));
     }
     
     [HttpGet("busca-por-id")]
-    public async Task<IActionResult> TimesById(
+    public async Task<IActionResult> GetTimesById(
         [FromQuery(Name = "id")] int id
         , [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getTime) = await _backgroundService.TimesById(id);
-        await _backgroundService.InserirLogAsync("GetTimesById", "Busca de time por Id", $"ID: {id}");
+        var (getResult, getTime) = await _backgroundService.GetTimesById(id);
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getTime)));
     }
     
@@ -39,7 +37,6 @@ public class TimeController : TimeDbControllerBase2
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.AtualizarTimeAsync(id, atualizaTime.Nome, atualizaTime.Cep);
-        await _backgroundService.InserirLogAsync("AtualizarTime", $"Time({id})", $"Nome: {atualizaTime.Nome}, \nCEP: {atualizaTime.Cep}");
         return new Result(true, "Time atualizado com sucesso!");
     }
     
@@ -47,7 +44,6 @@ public class TimeController : TimeDbControllerBase2
     public async Task<Result> Post(TimeModel time, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.InserirTimeAsync(time.Nome, time.Cep);
-        await _backgroundService.InserirLogAsync("InserirTime", $"Time {time.Nome} inserido com sucesso!", $"Nome: {time.Nome}, \nCEP: {time.Cep}");
         return new Result(true, "Time inserido com sucesso!");
     }
     
@@ -56,7 +52,6 @@ public class TimeController : TimeDbControllerBase2
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.DeletarTimeAsync(id);
-        await _backgroundService.InserirLogAsync("DeletarTime", "Time deletado com sucesso!", $"ID: {id}");
         return new Result(true, "Time deletado com sucesso!");
     }
 }

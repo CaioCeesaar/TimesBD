@@ -17,21 +17,19 @@ public class JogadorController : TimeDbControllerBase2
     
     [HttpGet]
     [ProducesResponseType(typeof(Jogador), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Jogadores(
+    public async Task<IActionResult> GetJogadores(
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getJogadores) = await _backgroundService.Jogadores();
-        await _backgroundService.InserirLogAsync("GetJogadores", "Busca de todos os jogadores", "");
+        var (getResult, getJogadores) = await _backgroundService.GetJogadores();
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getJogadores)));
     }
 
     [HttpGet("busca-por-id")]
     [ProducesResponseType(typeof(Jogador), StatusCodes.Status200OK)]
-    public async Task<IActionResult> JogadoresById(
+    public async Task<IActionResult> GetJogadoresById(
         [FromQuery(Name = "id")] int id, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
-        var (getResult, getJogador) = await _backgroundService.JogadorById(id);
-        await _backgroundService.InserirLogAsync("GetJogadoresById", "Busca de jogador por Id", $"ID: {id}");
+        var (getResult, getJogador) = await _backgroundService.GetJogadorById(id);
         return ConvertResultToHttpResult(new Result(getResult.Sucess, JsonSerializer.Serialize(getJogador)));
     }
     
@@ -40,9 +38,6 @@ public class JogadorController : TimeDbControllerBase2
         [FromHeader(Name = "Autentica")] string? autentica = null)
     {
            await _backgroundService.AtualizarJogadorAsync(id, atualizaJogador.Nome, atualizaJogador.DataNascimento, atualizaJogador.TimeId, atualizaJogador.Cep);
-           await _backgroundService.InserirLogAsync("AtualizarJogador",
-               $"Jogador({id})",
-               $"Nome: {atualizaJogador.Nome}, \nData de Nascimento: {atualizaJogador.DataNascimento}, \nTimeId: {atualizaJogador.TimeId}, \nCEP: {atualizaJogador.Cep}");
            return new Result(true, "Jogador atualizado com sucesso!");
     }
     
@@ -50,9 +45,6 @@ public class JogadorController : TimeDbControllerBase2
     public async Task<Result> Post(JogadorModel jogador, [FromHeader(Name = "Autentica")] string? autentica = null)
     {
         await _backgroundService.InserirJogadorAsync(jogador.Nome, jogador.DataNascimento, jogador.TimeId, jogador.Cep);
-        await _backgroundService.InserirLogAsync("InserirJogador",
-            $"Jogador {jogador.Nome} inserido com sucesso!",
-            $"Nome: {jogador.Nome}, \nData de Nascimento: {jogador.DataNascimento}, \nTimeId: {jogador.TimeId}, \nCEP: {jogador.Cep}");
         return new Result(true, "Jogador inserido com sucesso!");
     }
 
@@ -61,7 +53,6 @@ public class JogadorController : TimeDbControllerBase2
          [FromHeader(Name = "Autentica")] string? autentica = null)
      {
          await _backgroundService.DeletarJogadorAsync(id);
-            await _backgroundService.InserirLogAsync("DeletarJogador", "Jogador deletado com sucesso!", $"ID: {id}");
          return new Result(true, "Jogador deletado com sucesso!");
      }
     

@@ -1,5 +1,4 @@
 using TimesBD.Framework;
-using TimesBD.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +9,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<ILogRepository, MongoRep>();
 builder.Services.AddSingleton<TimesBackgroundService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<TimesBackgroundService>());
 
