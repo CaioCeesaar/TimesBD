@@ -2,23 +2,23 @@
 {
     public static class SProc
     {
-        public const string GetJogadores = "sp_GetAllJogadores";
-        public const string GetCompradores = "sp_GetAllCompradores";
-        public const string GetEstadios = "sp_GetAllEstadios";
-        public const string GetIngressos = "sp_GetAllIngressos";
-        public const string GetJogos = "sp_GetAllJogos";
-        public const string GetPartidas = "sp_GetAllPartidas";
-        public const string GetTimes = "sp_GetAllTimes";
-        public const string GetVendas = "sp_GetAllVendas";
+        public const string Jogadores = "sp_GetAllJogadores";
+        public const string Compradores = "sp_GetAllCompradores";
+        public const string Estadios = "sp_GetAllEstadios";
+        public const string Ingressos = "sp_GetAllIngressos";
+        public const string Jogos = "sp_GetAllJogos";
+        public const string Partidas = "sp_GetAllPartidas";
+        public const string Times = "sp_GetAllTimes";
+        public const string Vendas = "sp_GetAllVendas";
         
-        public const string GetJogador = "sp_GetJogador";
-        public const string GetComprador = "sp_GetComprador";
-        public const string GetIngresso = "sp_GetIngresso";
-        public const string GetEstadio = "sp_GetEstadio";
-        public const string GetJogo = "sp_GetJogo";
-        public const string GetPartida = "sp_GetPartida";
-        public const string GetTime = "sp_GetTime";
-        public const string GetVenda = "sp_GetVenda";
+        public const string Jogador = "sp_GetJogador";
+        public const string Comprador = "sp_GetComprador";
+        public const string Ingresso = "sp_GetIngresso";
+        public const string Estadio = "sp_GetEstadio";
+        public const string Jogo = "sp_GetJogo";
+        public const string Partida = "sp_GetPartida";
+        public const string Time = "sp_GetTime";
+        public const string Venda = "sp_GetVenda";
             
         public const string InserirEstadio = "sp_InserirEstadio";
         public const string InserirComprador = "sp_InserirComprador";
