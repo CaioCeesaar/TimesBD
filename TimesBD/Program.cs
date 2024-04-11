@@ -1,3 +1,6 @@
+using TimesBD.Framework;
+using TimesBD.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +9,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<ILogRepository, MongoRep>();
+builder.Services.AddSingleton<TimesBackgroundService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<TimesBackgroundService>());
 
 var app = builder.Build();
 
