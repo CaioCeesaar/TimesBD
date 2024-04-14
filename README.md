@@ -17,7 +17,7 @@ Este repositório contém o projeto desenvolvido durante a mentoria do devConnec
 
 ## Arquitetura básica do sistema
 
-![image](https://github.com/CaioCeesaar/TimesBD/assets/83191307/ceb042a4-44a0-496a-b524-18b2a99be004)
+![image](https://github.com/CaioCeesaar/TimesBD/assets/83191307/913d0e4c-d5cc-45ab-9eaf-53e9302bc4ff)
 
 ### Como começar?
 
