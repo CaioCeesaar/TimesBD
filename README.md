@@ -15,9 +15,10 @@ Este repositório contém o projeto desenvolvido durante a mentoria do devConnec
 - **Workers**: Utilização de trabalhadores para processos em segundo plano. 
 - **Injeção de Dependência**: Para desacoplamento e teste de código.
 
-## Desenho de arquitetura básica do nosso sistema
+## Arquitetura básica do sistema
 
-![[Pasted image 20240414004719.png]]
+![image](https://github.com/CaioCeesaar/TimesBD/assets/83191307/ceb042a4-44a0-496a-b524-18b2a99be004)
+
 ### Como começar?
 
 1. Clone o repositório: 
