@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TimesBD.Business;
 using TimesBD.Entities;
 using TimesBD.Framework;
@@ -8,6 +9,7 @@ namespace TimesBD.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[EnableRateLimiting("fixed")]
 public class CompradorController : TimeDbControllerBase2
 {
     public CompradorController(IConfiguration configuration, TimesBackgroundService backgroundService) : base(backgroundService)
